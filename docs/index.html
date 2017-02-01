@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    body {
+        width: 100%;
+        height:100%;
+        margin: 0;
+        background-color: #000
+    }
+    canvas {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+</style>
+<body>
+
+
+
+<script id="computeShaderPosition" type="x-shader/x-fragment">
+            // 現在の位置情報を決定する
+            #define delta 0.1;
+            uniform float time;
+            float Pi = 3.141592;
+            uniform vec3 emitterPos;
+            uniform vec3 pre_emitterPos;
+            float random(vec2 co){
+                    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+                }
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy / resolution.xy;
+                vec4 tmpPos = texture2D( texturePosition, uv );
+                vec3 pos = tmpPos.xyz;
+                vec4 tmpVel = texture2D( textureVelocity, uv );
+                // velが移動する方向(もう一つ下のcomputeShaderVelocityを参照)
+                vec3 vel = tmpVel.xyz;
+                vel.y = 1.0;
+
+
+                // 移動する方向に速度を掛け合わせた数値を現在地に加える。
+                pos += vel * tmpVel.w * 0.5;
+                //tmpPos.w --;
+                if(pos.y > tmpPos.w+200.0)
+                {
+
+                    tmpPos.w = random(pos.xy) * 100.0;
+                    float theta = 2.0 * Pi * random(pos.yy);
+                    float phi = Pi * random(pos.zz);
+                    float r = 5.0 * random(pos.xy);
+                    //vec3 startPos = emitterPos + (emitterPos - pre_emitterPos) * random(pos.yz);
+                    pos = vec3(r * sin(theta) * cos(phi) * 2.0, r * sin(theta) * sin(phi), r * cos(theta));
+
+
+                }
+                gl_FragColor = vec4( pos, tmpPos.w );
+            }
+        </script>
+
+<!-- Fragment shader for protoplanet's velocity -->
+<script id="computeShaderVelocity" type="x-shader/x-fragment">
+
+            // 移動方向についていろいろ計算できるシェーダー。
+            // 今回はなにもしてない。
+            // ここでVelのx y zについて情報を上書きすると、それに応じて移動方向が変わる
+            #include <common>
+
+            vec4 mod289(vec4 x) {
+              return x - floor(x * (1.0 / 289.0)) * 289.0; }
+
+            float mod289(float x) {
+              return x - floor(x * (1.0 / 289.0)) * 289.0; }
+
+            vec4 permute(vec4 x) {
+                 return mod289(((x*34.0)+1.0)*x);
+            }
+
+            float permute(float x) {
+                 return mod289(((x*34.0)+1.0)*x);
+            }
+
+            vec4 taylorInvSqrt(vec4 r)
+            {
+              return 1.79284291400159 - 0.85373472095314 * r;
+            }
+
+            float taylorInvSqrt(float r)
+            {
+              return 1.79284291400159 - 0.85373472095314 * r;
+            }
+
+            vec4 grad4(float j, vec4 ip)
+              {
+              const vec4 ones = vec4(1.0, 1.0, 1.0, -1.0);
+              vec4 p,s;
+
+              p.xyz = floor( fract (vec3(j) * ip.xyz) * 7.0) * ip.z - 1.0;
+              p.w = 1.5 - dot(abs(p.xyz), ones.xyz);
+              s = vec4(lessThan(p, vec4(0.0)));
+              p.xyz = p.xyz + (s.xyz*2.0 - 1.0) * s.www;
+
+              return p;
+              }
+
+            // (sqrt(5) - 1)/4 = F4, used once below
+            #define F4 0.309016994374947451
+
+            float snoise(vec4 v)
+              {
+              const vec4  C = vec4( 0.138196601125011,  // (5 - sqrt(5))/20  G4
+                                    0.276393202250021,  // 2 * G4
+                                    0.414589803375032,  // 3 * G4
+                                   -0.447213595499958); // -1 + 4 * G4
+
+            // First corner
+              vec4 i  = floor(v + dot(v, vec4(F4)) );
+              vec4 x0 = v -   i + dot(i, C.xxxx);
+
+            // Other corners
+
+            // Rank sorting originally contributed by Bill Licea-Kane, AMD (formerly ATI)
+              vec4 i0;
+              vec3 isX = step( x0.yzw, x0.xxx );
+              vec3 isYZ = step( x0.zww, x0.yyz );
+            //  i0.x = dot( isX, vec3( 1.0 ) );
+              i0.x = isX.x + isX.y + isX.z;
+              i0.yzw = 1.0 - isX;
+            //  i0.y += dot( isYZ.xy, vec2( 1.0 ) );
+              i0.y += isYZ.x + isYZ.y;
+              i0.zw += 1.0 - isYZ.xy;
+              i0.z += isYZ.z;
+              i0.w += 1.0 - isYZ.z;
+
+              // i0 now contains the unique values 0,1,2,3 in each channel
+              vec4 i3 = clamp( i0, 0.0, 1.0 );
+              vec4 i2 = clamp( i0-1.0, 0.0, 1.0 );
+              vec4 i1 = clamp( i0-2.0, 0.0, 1.0 );
+
+              //  x0 = x0 - 0.0 + 0.0 * C.xxxx
+              //  x1 = x0 - i1  + 1.0 * C.xxxx
+              //  x2 = x0 - i2  + 2.0 * C.xxxx
+              //  x3 = x0 - i3  + 3.0 * C.xxxx
+              //  x4 = x0 - 1.0 + 4.0 * C.xxxx
+              vec4 x1 = x0 - i1 + C.xxxx;
+              vec4 x2 = x0 - i2 + C.yyyy;
+              vec4 x3 = x0 - i3 + C.zzzz;
+              vec4 x4 = x0 + C.wwww;
+
+            // Permutations
+              i = mod289(i);
+              float j0 = permute( permute( permute( permute(i.w) + i.z) + i.y) + i.x);
+              vec4 j1 = permute( permute( permute( permute (
+                         i.w + vec4(i1.w, i2.w, i3.w, 1.0 ))
+                       + i.z + vec4(i1.z, i2.z, i3.z, 1.0 ))
+                       + i.y + vec4(i1.y, i2.y, i3.y, 1.0 ))
+                       + i.x + vec4(i1.x, i2.x, i3.x, 1.0 ));
+
+            // Gradients: 7x7x6 points over a cube, mapped onto a 4-cross polytope
+            // 7*7*6 = 294, which is close to the ring size 17*17 = 289.
+              vec4 ip = vec4(1.0/294.0, 1.0/49.0, 1.0/7.0, 0.0) ;
+
+              vec4 p0 = grad4(j0,   ip);
+              vec4 p1 = grad4(j1.x, ip);
+              vec4 p2 = grad4(j1.y, ip);
+              vec4 p3 = grad4(j1.z, ip);
+              vec4 p4 = grad4(j1.w, ip);
+
+            // Normalise gradients
+              vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+              p0 *= norm.x;
+              p1 *= norm.y;
+              p2 *= norm.z;
+              p3 *= norm.w;
+              p4 *= taylorInvSqrt(dot(p4,p4));
+
+            // Mix contributions from the five corners
+              vec3 m0 = max(0.6 - vec3(dot(x0,x0), dot(x1,x1), dot(x2,x2)), 0.0);
+              vec2 m1 = max(0.6 - vec2(dot(x3,x3), dot(x4,x4)            ), 0.0);
+              m0 = m0 * m0;
+              m1 = m1 * m1;
+              return 49.0 * ( dot(m0*m0, vec3( dot( p0, x0 ), dot( p1, x1 ), dot( p2, x2 )))
+                           + dot(m1*m1, vec2( dot( p3, x3 ), dot( p4, x4 ) ) ) ) ;
+
+              }
+
+
+
+
+            uniform float time;
+            vec3 vel;
+            float scale = 0.03;
+            float  speed = 0.1;
+
+            float u_scale = 0.41;
+            float u_timestep = 0.5;
+
+            float random(vec2 co){
+                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+            }
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy / resolution.xy;
+
+                vec4 tmpPos = texture2D( texturePosition, uv );
+                vec3 pos = tmpPos.xyz;
+
+                float idParticle = uv.y * resolution.x + uv.x;
+                vec4 tmpVel = texture2D( textureVelocity, uv );
+
+                //float _scale = 0.001;
+
+                float scalex = time  * speed + 0.1365143;
+                float scaley = time  * speed +   1.21688;
+                float scalez = time  * speed +    2.5564;
+
+
+                vel.x += snoise(vec4(pos.x * u_scale, pos.y * u_scale, pos.z * u_scale, time));
+                vel.y += snoise(vec4(pos.x * u_scale, pos.y * u_scale, pos.z * u_scale, time));
+                vel.z += snoise(vec4(pos.x * u_scale, pos.y * u_scale, pos.z * u_scale, time));
+
+
+                //vec3 vel = curlNoise(vec3(pos.x*_scale,pos.y*_scale,pos.z*_scale));
+                vel = normalize(vel);
+
+                gl_FragColor = vec4( vel.xyz, 1.0 );
+            }
+        </script>
+
+<!-- Particles vertex shader -->
+<script type="x-shader/x-vertex" id="particleVertexShader">
+
+
+            #include <common>
+            uniform sampler2D texturePosition;
+            uniform float cameraConstant;
+            uniform float density;
+            varying vec4 vColor;
+            uniform float radius;
+
+
+
+            void main() {
+                vec4 posTemp = texture2D( texturePosition, uv );
+                vec3 pos = posTemp.xyz;
+                vColor = vec4( 1.0,1.0,1.0,1.0 );
+
+                // ポイントのサイズを決定
+                vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );
+                gl_PointSize = 1.0 * cameraConstant / ( - mvPosition.z );
+
+                // uv情報の引き渡し
+                //vUv = uv;
+
+                // 変換して格納
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        </script>
+
+<!-- Particles fragment shader -->
+<script type="x-shader/x-fragment" id="particleFragmentShader">
+            // VertexShaderから受け取った色を格納するだけ。
+            varying vec4 vColor;
+            //uniform sampler2D map;
+            void main() {
+
+                // 丸い形に色をぬるための計算
+                float f = length( gl_PointCoord - vec2( 0.5, 0.5 ) );
+                if ( f > 0.1 ) {
+                    discard;
+                }
+                //vec4 diffuseColor = texture2D( map, gl_PointCoord );
+                //if ( diffuseColor.w < 0.5 ) discard;
+                //gl_FragColor = vColor * texture2D(map, gl_PointCoord);
+                gl_FragColor = vColor;
+            }
+</script>
+
+
+
+
+
+
+
+
+// ********************** instance billboard ********************** //
+<!--<script id="vshader_billboard" type="x-shader/x-vertex">-->
+		<!--precision highp float;-->
+		<!--uniform mat4 modelViewMatrix;-->
+		<!--uniform mat4 projectionMatrix;-->
+		<!--uniform mat4 viewMatrix;-->
+		<!--uniform float time;-->
+		<!--attribute vec3 position;-->
+		<!--attribute vec3 normal;-->
+		<!--attribute vec3 cameraPosition;-->
+
+		<!--uniform sampler2D texturePosition;-->
+		<!--attribute vec2 uv;-->
+		<!--attribute vec2 uv_gpu;-->
+		<!--attribute vec3 translate;-->
+
+		<!--varying vec2 vUv;-->
+		<!--varying float vScale;-->
+		<!--varying vec3 vNormal;-->
+		<!--uniform mat4 invMatrix;-->
+		<!--void main() {-->
+
+            <!--vNormal = normal;-->
+
+		    <!--vec4 posTemp = texture2D( texturePosition, uv_gpu );-->
+            <!--vec3 pos = posTemp.xyz;-->
+		    <!--//vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );-->
+			<!--vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );-->
+			<!--vec3 trTime = vec3(pos.x + time,pos.y + time,pos.z + time);-->
+			<!--float scale =  (sin( trTime.x * 2.1 ) + sin( trTime.y * 3.2 ) + sin( trTime.z * 4.3 ))/10.0;-->
+			<!--vScale = scale;-->
+			<!--scale = scale * 10.0 + 10.0;-->
+			<!--//scale = 10.0;-->
+
+			<!--//scale = clamp(distance(pos,vec3(0.0,0.0,0.0)), 1.0,0.0 )*30.0;-->
+			<!--scale = sin(time)*10.0;-->
+			<!--mvPosition.xyz += position * scale;-->
+			<!--vUv = uv;-->
+			<!--gl_Position = projectionMatrix * mvPosition;-->
+
+
+		<!--}-->
+	<!--</script>-->
+<!--<script id="fshader_billboard" type="x-shader/x-fragment">-->
+		<!--precision highp float;-->
+		<!--uniform sampler2D map;-->
+		<!--varying vec2 vUv;-->
+		<!--varying float vScale;-->
+		<!--varying vec3 vNormal;-->
+		<!--uniform float time;-->
+		<!--uniform mat4 viewMatrix;-->
+		<!--// HSL to RGB Convertion helpers-->
+		<!--vec3 HUEtoRGB(float H){-->
+			<!--H = mod(H,1.0);-->
+			<!--float R = abs(H * 6.0 - 3.0) - 1.0;-->
+			<!--float G = 2.0 - abs(H * 6.0 - 2.0);-->
+			<!--float B = 2.0 - abs(H * 6.0 - 4.0);-->
+			<!--return clamp(vec3(R,G,B),0.0,1.0);-->
+		<!--}-->
+		<!--vec3 HSLtoRGB(vec3 HSL){-->
+			<!--vec3 RGB = HUEtoRGB(HSL.x);-->
+			<!--float C = (1.0 - abs(2.0 * HSL.z - 1.0)) * HSL.y;-->
+			<!--return (RGB - 0.5) * C + HSL.z;-->
+		<!--}-->
+		<!--void main() {-->
+			<!--vec4 diffuseColor = texture2D( map, vUv );-->
+
+			<!--vec3 lightDirection = vec3(0.0,30.0,30.0);-->
+            <!--vec3  invLight = normalize(viewMatrix * vec4(lightDirection, 0.0)).xyz;-->
+            <!--float diffuse  = clamp(dot(vNormal, invLight), 0.0, 1.0);-->
+            <!--vec4 ambientColor = vec4(0.1, 0.1, 0.1, 1.0);-->
+            <!--vec4 destColor = vec4(0.8,0.6,0.9,1.0) * vec4(vec3(diffuse), 1.0) + ambientColor;-->
+
+
+			<!--//gl_FragColor = vec4( 0.9,0.5,0.9,1.0 );-->
+			<!--gl_FragColor = destColor;-->
+            <!--//gl_FragColor = vec4( diffuseColor.xyz * HSLtoRGB(vec3(0.8, 0.4, 0.9)), diffuseColor.w );-->
+			<!--//if ( diffuseColor.w < 0.5 ) discard;-->
+		<!--}-->
+	<!--</script>-->
+
+
+
+<!--<script id="vertexShader_line" type="x-shader/x-vertex">-->
+		<!--precision highp float;-->
+		<!--uniform float sineTime;-->
+		<!--uniform mat4 modelViewMatrix;-->
+		<!--uniform mat4 projectionMatrix;-->
+		<!--attribute vec3 position;-->
+		<!--attribute vec3 offset;-->
+		<!--attribute vec4 color;-->
+		<!--attribute vec4 orientationStart;-->
+		<!--attribute vec4 orientationEnd;-->
+		<!--varying vec3 vPosition;-->
+		<!--varying vec4 vColor;-->
+		<!--void main(){-->
+			<!--vPosition = offset * max(abs(sineTime * 2.0 + 1.0), 0.5) + position;-->
+			<!--vec4 orientation = normalize(mix(orientationStart, orientationEnd, sineTime));-->
+			<!--vec3 vcV = cross(orientation.xyz, vPosition);-->
+			<!--vPosition = vcV * (2.0 * orientation.w) + (cross(orientation.xyz, vcV) * 2.0 + vPosition);-->
+			<!--vColor = color;-->
+			<!--gl_Position = projectionMatrix * modelViewMatrix * vec4( vPosition, 1.0 );-->
+		<!--}-->
+	<!--</script>-->
+
+<!--<script id="fragmentShader_line" type="x-shader/x-fragment">-->
+		<!--precision highp float;-->
+		<!--uniform float time;-->
+		<!--varying vec3 vPosition;-->
+		<!--varying vec4 vColor;-->
+		<!--void main() {-->
+			<!--vec4 color = vec4( vColor );-->
+			<!--color.r += sin( vPosition.x * 10.0 + time ) * 0.5;-->
+			<!--gl_FragColor = color;-->
+		<!--}-->
+	<!--</script>-->
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
+<script type="text/javascript" src="js/ConvexGeometry.js"></script>
+<script type="text/javascript" src="js/simplex-noise.js"></script>
+<script type="text/javascript" src="js/GPUComputationRenderer.js"></script>
+<script type="text/javascript" src="js/GPUParticle.js"></script>
+<script type="text/javascript" src="js/dat.gui.min.js"></script>
+<script type="text/javascript" src="js/BokehShader2.js"></script>
+<script type="text/javascript" src="js/OBJLoader.js"></script>
+<script type="text/javascript" src="js/DDSLoader.js"></script>
+<script type="text/javascript" src="js/MTLLoader.js"></script>
+<script type="text/javascript" src="js/VThree.js"></script>
+<script type="text/javascript" src="js/controls/OrbitControls.js"></script>
+<script type="text/javascript" src="js/WireBox.js"></script>
+<script type="text/javascript" src="js/scene01.js"></script>
+<script type="text/javascript" src="js/scene02.js"></script>
+<script type="text/javascript" src="js/scene03.js"></script>
+<script type="text/javascript" src="js/scene04.js"></script>
+<script type="text/javascript" src="js/scene05.js"></script>
+<script type="text/javascript" src="js/particle.js"></script>
+<script type="text/javascript" src="js/NoiseLine.js"></script>
+<script type="text/javascript" src="js/Boids3D.js"></script>
+<script type="text/javascript" src="js/instancingLines.js"></script>
+<script type="text/javascript" src="js/BoxParticle.js"></script>
+<script type="text/javascript" src="js/model_test.js"></script>
+<script type="text/javascript" src="js/ShadowBoxs.js"></script>
+<script type="text/javascript" src="js/matrix_test.js"></script>
+<script type="text/javascript" src="js/ImgParticle.js"></script>
+<script type="text/javascript" src="js/instancing_billboards_test.js"></script>
+<script>
+
+    window.addEventListener("load",function () {
+        var vthree = new VThree();
+        var scene01 = new GPGPUParticleScene(vthree.renderer);
+        var scene03 = new TetShadowTest(vthree.renderer);
+        var shadowBox = new ShadowBoxs(vthree.renderer);
+        var scene02 = new BoxParticle(vthree.renderer);
+        var scene05 = new Scene05(vthree.renderer);
+        var model = new ModelTest(vthree.renderer);
+//        var scene03 = new TetTest(vthree.renderer);
+//        var scene04 = new NoiseLine(vthree.renderer);
+//		var scene05 = new InstancingBalls(vthree.renderer);
+//        var lines = new InstancingLines(vthree.renderer);
+        var boxparticle = new BoxParticle(vthree.renderer);
+        var matrix = new MatrxTest(vthree.renderer);
+        let imgParticle = new ImgParticle(vthree.renderer);
+//		var particle = new GPGPUParticleScene(vthree.renderer);
+
+
+
+
+
+
+        vthree.addScene(imgParticle);
+        vthree.addScene(matrix);
+        vthree.addScene(shadowBox);
+
+//        vthree.addScene(model);
+//        vthree.addScene(boxparticle);
+//        vthree.addScene(scene01);
+
+
+        vthree.draw();
+
+    },false);
+
+</script>
+
+</body>
+</html>
