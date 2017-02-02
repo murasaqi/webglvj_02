@@ -9,7 +9,7 @@ class ImgParticle{
     public camera: THREE.Camera;
     private timer:number = 0;
 
-    private WIDTH:number =500;
+    private WIDTH:number =350;
     private PARTICLES = this.WIDTH * this.WIDTH;
 
     private stats:Object;
@@ -24,6 +24,9 @@ class ImgParticle{
     private particleUniforms:any;
     private effectController:Object;
     private renderer:THREE.WebGLRenderer;
+
+    private imgWidth:number = 80;
+    private imgHeight:number = 100;
 
 
     constructor(renderer:THREE.WebGLRenderer) {
@@ -63,9 +66,10 @@ class ImgParticle{
         // 今回はパーティクルの位置情報と、移動方向を保存するテクスチャを2つ用意します
         var dtPosition = this.gpuCompute.createTexture();
         var dtVelocity = this.gpuCompute.createTexture();
+        var dtColor = this.gpuCompute.createTexture();
 
         // テクスチャにGPUで計算するために初期情報を埋めていく
-        this.fillTextures( dtPosition, dtVelocity );
+        this.fillTextures( dtPosition, dtVelocity,dtColor );
 
         // shaderプログラムのアタッチ
         this.velocityVariable = this.gpuCompute.addVariable( "textureVelocity", document.getElementById( 'computeShaderVelocity' ).textContent, dtVelocity );
@@ -77,18 +81,14 @@ class ImgParticle{
 
 
         // uniform変数を登録したい場合は以下のように作る
-        /*
-         positionUniforms = positionVariable.material.uniforms;
-         velocityUniforms = velocityVariable.material.uniforms;
 
-         velocityUniforms.time = { value: 0.0 };
-         positionUniforms.time = { ValueB: 0.0 };
-         ***********************************
-         たとえば、上でコメントアウトしているeffectControllerオブジェクトのtimeを
-         わたしてあげれば、effectController.timeを更新すればuniform変数も変わったり、ということができる
-         velocityUniforms.time = { value: effectController.time };
-         ************************************
-         */
+        this.positionUniforms = this.positionVariable.material.uniforms;
+        this.velocityUniforms = this.velocityVariable.material.uniforms;
+
+        this.velocityUniforms.time = { value: 0.0 };
+        this.positionUniforms.time = { Value: 0.0 };
+
+
 
         // error処理
         var error = this.gpuCompute.init();
@@ -143,7 +143,10 @@ class ImgParticle{
         this.particleUniforms = {
             texturePosition: { value: null },
             textureVelocity: { value: null },
-            cameraConstant: { value: this.getCameraConstant( ) }
+            cameraConstant: { value: this.getCameraConstant( ) },
+            map : {value:new THREE.TextureLoader().load( "texture/MonaLisa.jpg" )},
+            texImgWidth : {value:this.imgWidth},
+            texImgHeight : {value:this.imgHeight}
         };
 
 
@@ -164,7 +167,7 @@ class ImgParticle{
     }
 
 
-    private fillTextures( texturePosition, textureVelocity ) {
+    private fillTextures( texturePosition, textureVelocity,dtColor ) {
 
         // textureのイメージデータをいったん取り出す
         var posArray = texturePosition.image.data;
@@ -175,8 +178,7 @@ class ImgParticle{
 
         let xCounter = 1;
         let yCounter = 1;
-        let imgWidth = 100;
-        let imgHeight = 100;
+
         for ( var k = 0, kl = posArray.length; k < kl; k += 4 ) {
             // Position
             xCounter ++;
@@ -185,18 +187,18 @@ class ImgParticle{
                 yCounter++;
             }
             var x, y, z;
-            x = (-0.5 + (xCounter%this.WIDTH)/this.WIDTH)*imgWidth;
-            z = (-0.5 + (yCounter%this.WIDTH)/this.WIDTH)*imgHeight;
+            x = (-0.5 + (xCounter%this.WIDTH)/this.WIDTH)*this.imgWidth;
+            z = (-0.5 + (yCounter%this.WIDTH)/this.WIDTH)*this.imgHeight;
             // x = Math.random()*10-5;
             // z = Math.random()*10-5;
-            y = 0;
+            y = Math.random()*10.0;
             // posArrayの実態は一次元配列なので
             // x,y,z,wの順番に埋めていく。
             // wは今回は使用しないが、配列の順番などを埋めておくといろいろ使えて便利
             posArray[ k + 0 ] = x;
             posArray[ k + 1 ] = y;
             posArray[ k + 2 ] = z;
-            posArray[ k + 3 ] = 0;
+            posArray[ k + 3 ] = Math.random()*30.0+Math.random()*20.0;
 
             // 移動する方向はとりあえずランダムに決めてみる。
             // これでランダムな方向にとぶパーティクルが出来上がるはず。
@@ -204,6 +206,11 @@ class ImgParticle{
             velArray[ k + 1 ] = Math.random()*2-1;
             velArray[ k + 2 ] = Math.random()*2-1;
             velArray[ k + 3 ] = Math.random()*2-1;
+
+            dtColor[ k + 0 ] = Math.random()*2-1;
+            dtColor[ k + 1 ] = Math.random()*2-1;
+            dtColor[ k + 2 ] = Math.random()*2-1;
+            dtColor[ k + 3 ] = Math.random()*2-1;
         }
     }
 
@@ -211,8 +218,7 @@ class ImgParticle{
         return window.innerHeight / ( Math.tan( THREE.Math.DEG2RAD * 0.5 * this.camera.fov ) / this.camera.zoom );
     }
 
-
-
+    
     // 画面がリサイズされたときの処理
     // ここでもシェーダー側に情報を渡す。
     private onWindowResize() {
@@ -239,10 +245,17 @@ class ImgParticle{
     // ワンフレームごとの処理
     public update() {
 
+        this.gpuCompute.compute();
 
         this.renderer.setClearColor(0x000000);
+
+
         this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget( this.positionVariable ).texture;
         this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget( this.velocityVariable ).texture;
+
+
+        this.velocityUniforms.time.value += 0.01;
+        this.positionUniforms.time.value += 0.01;
 
     }
 

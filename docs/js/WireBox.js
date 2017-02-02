@@ -1,3 +1,4 @@
+var Uint16Attribute = THREE.Uint16Attribute;
 var WireBox = (function () {
     function WireBox(scene, width, depth, height, position, color, isCreateFace) {
         this.width = 100;

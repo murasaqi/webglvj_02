@@ -1,8 +1,10 @@
 var ImgParticle = (function () {
     function ImgParticle(renderer) {
         this.timer = 0;
-        this.WIDTH = 500;
+        this.WIDTH = 350;
         this.PARTICLES = this.WIDTH * this.WIDTH;
+        this.imgWidth = 80;
+        this.imgHeight = 100;
         this.renderer = renderer;
         this.createScene();
         this.initPosition();
@@ -19,11 +21,16 @@ var ImgParticle = (function () {
         this.gpuCompute = new GPUComputationRenderer(this.WIDTH, this.WIDTH, this.renderer);
         var dtPosition = this.gpuCompute.createTexture();
         var dtVelocity = this.gpuCompute.createTexture();
-        this.fillTextures(dtPosition, dtVelocity);
+        var dtColor = this.gpuCompute.createTexture();
+        this.fillTextures(dtPosition, dtVelocity, dtColor);
         this.velocityVariable = this.gpuCompute.addVariable("textureVelocity", document.getElementById('computeShaderVelocity').textContent, dtVelocity);
         this.positionVariable = this.gpuCompute.addVariable("texturePosition", document.getElementById('computeShaderPosition').textContent, dtPosition);
         this.gpuCompute.setVariableDependencies(this.velocityVariable, [this.positionVariable, this.velocityVariable]);
         this.gpuCompute.setVariableDependencies(this.positionVariable, [this.positionVariable, this.velocityVariable]);
+        this.positionUniforms = this.positionVariable.material.uniforms;
+        this.velocityUniforms = this.velocityVariable.material.uniforms;
+        this.velocityUniforms.time = { value: 0.0 };
+        this.positionUniforms.time = { Value: 0.0 };
         var error = this.gpuCompute.init();
         if (error !== null) {
             console.error(error);
@@ -51,7 +58,10 @@ var ImgParticle = (function () {
         this.particleUniforms = {
             texturePosition: { value: null },
             textureVelocity: { value: null },
-            cameraConstant: { value: this.getCameraConstant() }
+            cameraConstant: { value: this.getCameraConstant() },
+            map: { value: new THREE.TextureLoader().load("texture/MonaLisa.jpg") },
+            texImgWidth: { value: this.imgWidth },
+            texImgHeight: { value: this.imgHeight }
         };
         var material = new THREE.ShaderMaterial({
             uniforms: this.particleUniforms,
@@ -64,30 +74,32 @@ var ImgParticle = (function () {
         particles.updateMatrix();
         this.scene.add(particles);
     };
-    ImgParticle.prototype.fillTextures = function (texturePosition, textureVelocity) {
+    ImgParticle.prototype.fillTextures = function (texturePosition, textureVelocity, dtColor) {
         var posArray = texturePosition.image.data;
         var velArray = textureVelocity.image.data;
         var xCounter = 1;
         var yCounter = 1;
-        var imgWidth = 100;
-        var imgHeight = 100;
         for (var k = 0, kl = posArray.length; k < kl; k += 4) {
             xCounter++;
             if (xCounter % this.WIDTH == 0) {
                 yCounter++;
             }
             var x, y, z;
-            x = (-0.5 + (xCounter % this.WIDTH) / this.WIDTH) * imgWidth;
-            z = (-0.5 + (yCounter % this.WIDTH) / this.WIDTH) * imgHeight;
-            y = 0;
+            x = (-0.5 + (xCounter % this.WIDTH) / this.WIDTH) * this.imgWidth;
+            z = (-0.5 + (yCounter % this.WIDTH) / this.WIDTH) * this.imgHeight;
+            y = Math.random() * 10.0;
             posArray[k + 0] = x;
             posArray[k + 1] = y;
             posArray[k + 2] = z;
-            posArray[k + 3] = 0;
+            posArray[k + 3] = Math.random() * 30.0 + Math.random() * 20.0;
             velArray[k + 0] = Math.random() * 2 - 1;
             velArray[k + 1] = Math.random() * 2 - 1;
             velArray[k + 2] = Math.random() * 2 - 1;
             velArray[k + 3] = Math.random() * 2 - 1;
+            dtColor[k + 0] = Math.random() * 2 - 1;
+            dtColor[k + 1] = Math.random() * 2 - 1;
+            dtColor[k + 2] = Math.random() * 2 - 1;
+            dtColor[k + 3] = Math.random() * 2 - 1;
         }
     };
     ImgParticle.prototype.getCameraConstant = function () {
@@ -106,9 +118,12 @@ var ImgParticle = (function () {
     ImgParticle.prototype.keyUp = function (e) {
     };
     ImgParticle.prototype.update = function () {
+        this.gpuCompute.compute();
         this.renderer.setClearColor(0x000000);
         this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
         this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
+        this.velocityUniforms.time.value += 0.01;
+        this.positionUniforms.time.value += 0.01;
     };
     return ImgParticle;
 }());
