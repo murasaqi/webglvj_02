@@ -205,7 +205,7 @@ class InstancingBalls{
             posArray[ k + 2 ] = _z;
             posArray[ k + 3 ] = 50.0;
 
-            // 移動する方向はとりあえずランダムに決めてみる。
+            // 移動する方向はとりあえずffffffランダムに決めてみる。
             // これでランダムな方向にとぶパーティクルが出来上がるはず。
             let randomVelRange = 100;
             velArray[ k + 0 ] = Math.random()*randomVelRange-randomVelRange/2;

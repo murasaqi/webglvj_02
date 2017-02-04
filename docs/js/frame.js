@@ -303,13 +303,11 @@ var GPGPUParticle_frame = (function () {
         this.geometry.addAttribute('uv', new THREE.BufferAttribute(uvs, 2));
         var colorVec = new THREE.Vector3(this.color.r, this.color.g, this.color.b);
         this.particleUniforms = {
-            map: { value: new THREE.TextureLoader().load("./textures/circle.png") },
             texturePosition: { value: null },
             textureVelocity: { value: null },
             alpha: { value: 1.0 },
             color: { value: colorVec },
-            cameraConstant: { value: this.getCameraConstant(this.camera) },
-            texture: { value: new THREE.TextureLoader().load("textures/sea02.jpg") }
+            cameraConstant: { value: this.getCameraConstant(this.camera) }
         };
         var material = new THREE.ShaderMaterial({
             uniforms: this.particleUniforms,
@@ -351,7 +349,7 @@ var GPGPUParticle_frame = (function () {
         }
     };
     GPGPUParticle_frame.prototype.getCameraConstant = function (camera) {
-        return window.innerHeight / (Math.tan(THREE.Math.DEG2RAD * 0.7 * camera.fov * 0.6) / camera.zoom);
+        return window.innerHeight / (Math.tan(THREE.Math.DEG2RAD * 0.5 * camera.fov) / camera.zoom * 0.5);
     };
     GPGPUParticle_frame.prototype.resize = function () {
         this.particleUniforms.cameraConstant.value = this.getCameraConstant(this.camera);
@@ -504,14 +502,14 @@ var Frame = (function () {
         var wireposition = new THREE.Vector3(-200, 0, 0);
         var color = new THREE.Color(0.05, 0.05, 0.05);
         this.particles.push(new GPGPUParticle_frame(this.scene, this.camera, this.renderer, 140, 210, particleposition, color));
-        this.boxs.push(new WireBox(this.scene, 140, 2, 210, wireposition, color, false));
+        this.boxs.push(new WierBox(this.scene, 140, 2, 210, wireposition, color, false));
         var particlepositionCenter = new THREE.Vector3(0, 0, 3);
         var wirepositionCenter = new THREE.Vector3(0, 0, 3);
-        this.boxs.push(new WireBox(this.scene, 140, 2, 210, wirepositionCenter, color, false));
+        this.boxs.push(new WierBox(this.scene, 140, 2, 210, wirepositionCenter, color, false));
         this.particles.push(new GPGPUParticle_frame(this.scene, this.camera, this.renderer, 140, 210, particlepositionCenter, color));
         var particlepositionRight = new THREE.Vector3(200, 0, 3);
         var wirepositionRight = new THREE.Vector3(200, 0, 3);
-        this.boxs.push(new WireBox(this.scene, 140, 2, 210, wirepositionRight, color, false));
+        this.boxs.push(new WierBox(this.scene, 140, 2, 210, wirepositionRight, color, false));
         this.particles.push(new GPGPUParticle_frame(this.scene, this.camera, this.renderer, 140, 210, particlepositionRight, color));
         for (var i = 0; i < this.boxs.length; i++) {
             var x = this.scene01FramePositions.now[i].x;
@@ -640,9 +638,11 @@ var Frame = (function () {
             this.time_scene02 += 0.01;
             if (Math.sin(this.time_scene02) < 0.0) {
                 this.speed += (0.001 - this.speed) * 0.1;
+                console.log("0");
             }
             else {
                 this.speed += (0.015 - this.speed) * 0.1;
+                console.log("1");
             }
             this.radian.value += this.speed;
             for (var i = 0; i < this.particles.length; i++) {

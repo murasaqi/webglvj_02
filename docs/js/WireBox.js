@@ -1,6 +1,6 @@
 var Uint16Attribute = THREE.Uint16Attribute;
-var WireBox = (function () {
-    function WireBox(scene, width, depth, height, position, color, isCreateFace) {
+var WierBox = (function () {
+    function WierBox(scene, width, depth, height, position, color, isCreateFace) {
         this.width = 100;
         this.height = 100;
         this.depth = 100;
@@ -18,7 +18,7 @@ var WireBox = (function () {
         this.rotation = this.Obj.rotation;
         this.init();
     }
-    WireBox.prototype.init = function () {
+    WierBox.prototype.init = function () {
         this.geometry = new THREE.BufferGeometry();
         this.material = new THREE.LineBasicMaterial({
             color: this.color,
@@ -115,12 +115,12 @@ var WireBox = (function () {
         this.Obj.position.set(this.position.x, this.position.y, this.position.z);
         this.scene.add(this.Obj);
     };
-    WireBox.prototype.updateVertex = function () {
+    WierBox.prototype.updateVertex = function () {
     };
-    WireBox.prototype.setPosition = function (position) {
+    WierBox.prototype.setPosition = function (position) {
         this.Obj.position.set(position.x, position.y, position.z);
     };
-    WireBox.prototype.updateHeadVertex = function (y) {
+    WierBox.prototype.updateHeadVertex = function (y) {
         console.log(this.mesh);
         this.positions.array[13] = y;
         this.positions.array[16] = y;
@@ -133,10 +133,10 @@ var WireBox = (function () {
         this.triangleVertices.needsUpdate = true;
         this.positions.needsUpdate = true;
     };
-    WireBox.prototype.update = function () {
+    WierBox.prototype.update = function () {
         var p = this.Obj.position;
         p.z--;
     };
-    return WireBox;
+    return WierBox;
 }());
 //# sourceMappingURL=WireBox.js.map

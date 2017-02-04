@@ -5,16 +5,17 @@ var ImgParticle = (function () {
         this.PARTICLES = this.WIDTH * this.WIDTH;
         this.imgWidth = 80;
         this.imgHeight = 100;
+        this.speed = 1.0;
+        this.isSpeedDown = false;
         this.renderer = renderer;
         this.createScene();
-        this.initPosition();
         this.initComputeRenderer();
+        this.initPosition();
     }
     ImgParticle.prototype.createScene = function () {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
         this.camera.position.z = 100;
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
     };
     ImgParticle.prototype.initComputeRenderer = function () {
         console.log(this.renderer);
@@ -31,6 +32,7 @@ var ImgParticle = (function () {
         this.velocityUniforms = this.velocityVariable.material.uniforms;
         this.velocityUniforms.time = { value: 0.0 };
         this.positionUniforms.time = { Value: 0.0 };
+        this.positionUniforms.timeStep = { Value: 1.0 };
         var error = this.gpuCompute.init();
         if (error !== null) {
             console.error(error);
@@ -72,6 +74,7 @@ var ImgParticle = (function () {
         var particles = new THREE.Points(this.geometry, material);
         particles.matrixAutoUpdate = false;
         particles.updateMatrix();
+        particles.frustumCulled = false;
         this.scene.add(particles);
     };
     ImgParticle.prototype.fillTextures = function (texturePosition, textureVelocity, dtColor) {
@@ -114,16 +117,37 @@ var ImgParticle = (function () {
     ImgParticle.prototype.click = function () {
     };
     ImgParticle.prototype.keyDown = function (e) {
+        if (e.key = "s") {
+            this.isSpeedDown = true;
+        }
     };
     ImgParticle.prototype.keyUp = function (e) {
+        this.isSpeedDown = false;
     };
     ImgParticle.prototype.update = function () {
+        if (this.isSpeedDown) {
+            this.speed = 0.5;
+        }
+        else {
+            this.speed = 1.0;
+        }
         this.gpuCompute.compute();
         this.renderer.setClearColor(0x000000);
         this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
         this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
-        this.velocityUniforms.time.value += 0.01;
-        this.positionUniforms.time.value += 0.01;
+        this.velocityUniforms.time.value += 0.01 * this.speed;
+        this.positionUniforms.time.value += 0.01 * this.speed;
+        var step = 0.01;
+        this.timer += step * this.speed;
+        var rad = 30;
+        this.camera.position.x = Math.cos(this.timer) * rad;
+        this.camera.position.z = Math.sin(this.timer) * rad + 10 * Math.cos(this.timer * 0.5);
+        this.camera.position.y = Math.sin(this.timer * 0.5) * rad * 0.8;
+        var lookat = new THREE.Vector3(0, 0, 0);
+        lookat.x = Math.cos(this.timer * 0.4) * 1;
+        lookat.y = Math.sin(this.timer * 0.2) * 1;
+        lookat.z = Math.cos(this.timer * 0.3) * 1;
+        this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     };
     return ImgParticle;
 }());

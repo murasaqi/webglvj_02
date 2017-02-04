@@ -11,9 +11,20 @@ class VThree
     public renderer:THREE.WebGLRenderer;
     private controls:Object;
 
+    private opacityStep:number = 0.1;
+    private opacity:number = 1.0;
+
+    public transparent:boolean = false;
+    public key_sceneNext:string = "ArrowRight";
+    public key_scenePrev:string = "ArrowLeft";
+
     private isOrbitControls:boolean = false;
-    constructor()
+    constructor(startAlpha:number,transparent:boolean)
     {
+
+
+        this.opacity = startAlpha;
+        this.transparent = transparent;
 
 
         // 初期化処理後、イベント登録
@@ -44,7 +55,7 @@ class VThree
     {
 
         // Rendererを作る
-        this.renderer = new THREE.WebGLRenderer({antialias: true});
+        this.renderer = new THREE.WebGLRenderer({antialias: true, alpha:true});
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.sortObjects = false;
@@ -53,6 +64,7 @@ class VThree
         this.renderer.domElement.id = "main";
         document.body.appendChild( this.renderer.domElement );
 
+        this.updateCanvasAlpha();
     }
 
     // 管理したいシーンを格納する関数
@@ -105,22 +117,60 @@ class VThree
 
         console.log(e);
         // console.log(this.NUM);
-        if(e.key == "ArrowRight")
+        if(e.key == this.key_sceneNext)
         {
             this.NUM++;
             this.checkNum();
         }
-        if( e.key == "ArrowLeft")
+        if( e.key == this.key_scenePrev)
         {
 
             this.NUM--;
             this.checkNum();
         }
 
+
+        if(e.key == "ArrowUp")
+        {
+            this.opacity += this.opacityStep;
+
+            if(this.opacity > 1.0)
+            {
+
+                this.opacity = 1.0;
+            }
+
+            this.updateCanvasAlpha();
+
+        }
+        if( e.key == "ArrowDown")
+        {
+
+            this.opacity -= this.opacityStep;
+
+            if(this.opacity < 0.0)
+            {
+
+                this.opacity = 0.0;
+            }
+            this.updateCanvasAlpha();
+        }
+
         console.log(this.NUM);
         this.scenes[this.NUM].keyDown(e);
 
     }
+
+    private updateCanvasAlpha()
+    {
+        if(this.transparent)
+        {
+            this.renderer.domElement.style.opacity = this.opacity;
+        }
+
+
+    }
+
 
     // 最終的な描写処理と、アニメーション関数をワンフレームごとに実行
     public draw() {

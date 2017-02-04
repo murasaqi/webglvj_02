@@ -1,6 +1,4 @@
-/**
- * Created by PurpleUma on 1/8/17.
- */
+
 
 
 /// <reference path="typings/index.d.ts" />
@@ -407,13 +405,12 @@ class GPGPUParticle_frame {
         var colorVec =  new THREE.Vector3(this.color.r,this.color.g,this.color.b);
         // particleの位置と移動方向を収めるuinform変数の初期化
         this.particleUniforms = {
-            map: { value: new THREE.TextureLoader().load( "./textures/circle.png" ) },
             texturePosition: { value: null },
             textureVelocity: { value: null },
             alpha:{value:1.0},
             color: {value: colorVec},
             cameraConstant: { value: this.getCameraConstant(this.camera) },
-            texture:    { value: new THREE.TextureLoader().load( "textures/sea02.jpg" ) }
+
         };
 
         // ShaderMaterial の設定
@@ -481,7 +478,7 @@ class GPGPUParticle_frame {
 
     public getCameraConstant(camera) {
         // カメラ情報を計算。
-        return window.innerHeight / ( Math.tan( THREE.Math.DEG2RAD * 0.7 * camera.fov*0.6 ) / camera.zoom );
+        return window.innerHeight / ( Math.tan( THREE.Math.DEG2RAD * 0.5 * camera.fov ) / camera.zoom*0.5 );
     }
 
     public resize() {
@@ -681,7 +678,7 @@ class Frame {
                     new THREE.Vector3(200,0,3)
 
                 ];
-    };
+        };
 
 
 
@@ -702,11 +699,11 @@ class Frame {
         };
 
         this.scene01FrameVector =
-            [
-                new THREE.Vector3(-0.5,0,0.0),
-                new THREE.Vector3(0.0,0,0.0),
-                new THREE.Vector3(0.5,0,0.0)
-            ];
+        [
+            new THREE.Vector3(-0.5,0,0.0),
+            new THREE.Vector3(0.0,0,0.0),
+            new THREE.Vector3(0.5,0,0.0)
+        ];
 
         this.scene01CameraRotation = new THREE.Vector3(Math.random()*Math.PI-Math.PI/2,Math.random()*Math.PI-Math.PI/2,-Math.random()*Math.PI/2).normalize();
 
@@ -737,7 +734,7 @@ class Frame {
         // this.scene.add(mesh);
 
         var wirematerial = new THREE.MeshBasicMaterial({
-            color:0x000000,
+           color:0x000000,
             wireframe:true
         });
 
@@ -764,17 +761,17 @@ class Frame {
         var color = new THREE.Color(0.05,0.05,0.05);
 
         this.particles.push(new GPGPUParticle_frame(this.scene,this.camera,this.renderer,140,210,particleposition,color));
-        this.boxs.push(new WireBox(this.scene,140,2,210,wireposition,color,false));
+        this.boxs.push(new WierBox(this.scene,140,2,210,wireposition,color,false));
 
         var particlepositionCenter = new THREE.Vector3(0,0,3);
         var wirepositionCenter = new THREE.Vector3(0,0,3);
-        this.boxs.push(new WireBox(this.scene,140,2,210,wirepositionCenter,color,false));
+        this.boxs.push(new WierBox(this.scene,140,2,210,wirepositionCenter,color,false));
         this.particles.push(new GPGPUParticle_frame(this.scene,this.camera,this.renderer,140,210,particlepositionCenter,color));
 
 
         var particlepositionRight = new THREE.Vector3(200,0,3);
         var wirepositionRight = new THREE.Vector3(200,0,3);
-        this.boxs.push(new WireBox(this.scene,140,2,210,wirepositionRight,color,false));
+        this.boxs.push(new WierBox(this.scene,140,2,210,wirepositionRight,color,false));
         this.particles.push(new GPGPUParticle_frame(this.scene,this.camera,this.renderer,140,210,particlepositionRight,color));
 
 
@@ -816,7 +813,7 @@ class Frame {
                     new THREE.Vector3(200,0,3)
 
                 ];
-    };
+        };
 
 
 
@@ -891,14 +888,17 @@ class Frame {
 
 
         if (this.scene02Update) {
-            this.time_scene01 += 0.02;
 
+
+            this.time_scene01 += 0.02;
 
             if (Math.sin(this.time_scene01) < 0.0) {
                 this.speed += (0.001 - this.speed) * 0.1;
 
+
             } else {
                 this.speed += (0.045 - this.speed) * 0.1;
+                //this.time_scene01 += 0.04;
                 // this.tween
             }
 
@@ -1003,10 +1003,12 @@ class Frame {
 
             if (Math.sin(this.time_scene02) < 0.0) {
                 this.speed += (0.001 - this.speed) * 0.1;
+                console.log("0");
 
             } else {
                 this.speed += (0.015 - this.speed) * 0.1;
                 // this.tween
+                console.log("1");
             }
 
             this.radian.value += this.speed;

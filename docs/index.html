@@ -39,6 +39,7 @@
             float Pi = 3.141592;
             uniform vec3 emitterPos;
             uniform vec3 pre_emitterPos;
+            uniform float timeStep;
             float random(vec2 co){
                     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
                 }
@@ -321,7 +322,54 @@
 
 
 
+<script id="vshader_instanceParticle" type="x-shader/x-vertex">
+		precision highp float;
+		uniform mat4 modelViewMatrix;
+		uniform mat4 projectionMatrix;
+		uniform float time;
+		attribute vec3 position;
+		attribute vec2 uv;
+		attribute vec3 translate;
+		varying vec2 vUv;
+		varying float vScale;
+		void main() {
+			vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );
+			vec3 trTime = vec3(translate.x + time,translate.y + time,translate.z + time);
+			float scale =  sin( trTime.x * 2.1 ) + sin( trTime.y * 2.1 ) + sin( trTime.z * 2.1 );
+			vScale = scale;
+			//scale = scale * 10.0 + 10.0;
+			mvPosition.xyz += position * scale;
+			vUv = uv;
+			gl_Position = projectionMatrix * mvPosition;
+		}
+</script>
+<script id="fshader_instanceParticle" type="x-shader/x-fragment">
+		precision highp float;
+		uniform sampler2D map;
+		varying vec2 vUv;
+		varying float vScale;
+		// HSL to RGB Convertion helpers
 
+
+		vec3 HUEtoRGB(float H){
+			H = mod(H,1.0);
+			float R = abs(H * 6.0 - 3.0) - 1.0;
+			float G = 2.0 - abs(H * 6.0 - 2.0);
+			float B = 2.0 - abs(H * 6.0 - 4.0);
+			return clamp(vec3(R,G,B),0.0,1.0);
+		}
+		vec3 HSLtoRGB(vec3 HSL){
+			vec3 RGB = HUEtoRGB(HSL.x);
+			float C = (1.0 - abs(2.0 * HSL.z - 1.0)) * HSL.y;
+			return (RGB - 0.5) * C + HSL.z;
+		}
+		void main() {
+			vec4 diffuseColor = texture2D( map, vUv );
+			gl_FragColor = vec4( diffuseColor.xyz * HSLtoRGB(vec3(vScale/5.0, 1.0, 0.5)), diffuseColor.w );
+			gl_FragColor = diffuseColor*vec4(1.0,1.0,1.0,1.0);
+			if ( diffuseColor.w < 0.5 ) discard;
+		}
+</script>
 
 
 
@@ -442,7 +490,7 @@
 		<!--}-->
 	<!--</script>-->
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
+<script type="text/javascript" src="js/three.min.js"></script>
 <script type="text/javascript" src="js/ConvexGeometry.js"></script>
 <script type="text/javascript" src="js/simplex-noise.js"></script>
 <script type="text/javascript" src="js/GPUComputationRenderer.js"></script>
@@ -469,34 +517,69 @@
 <script type="text/javascript" src="js/ShadowBoxs.js"></script>
 <script type="text/javascript" src="js/matrix_test.js"></script>
 <script type="text/javascript" src="js/ImgParticle.js"></script>
+<script type="text/javascript" src="js/frame.js"></script>
+<script type="text/javascript" src="js/clock.js"></script>
+<script type="text/javascript" src="js/box.js"></script>
+<script type="text/javascript" src="js/InstanceBufferParticle.js"></script>
+<script type="text/javascript" src="js/NoiseWaveLogo.js"></script>
 <script type="text/javascript" src="js/instancing_billboards_test.js"></script>
+
+<style>
+    body {
+        font-weight: lighter;
+        width: 100%;
+        height:100%;
+        margin: 0;
+        background-color: #000;
+        overflow: hidden;
+    }
+    canvas {
+        /*width: 100%;*/
+        /*height: 100%;*/
+        position: fixed;
+        top: 0;
+        left: 0;
+        opacity: 1.0;
+    }
+
+</style>
 <script>
 
     window.addEventListener("load",function () {
-        var vthree = new VThree();
-        var scene01 = new GPGPUParticleScene(vthree.renderer);
-        var scene03 = new TetShadowTest(vthree.renderer);
+        var vthree = new VThree(1.0,false);
+        var vthree02 = new VThree(0.0,true);
+
+        vthree02.key_sceneNext = ".";
+        vthree02.key_scenePrev = ",";
+
+//        var vthree03 = new VThree(0.0,true);
+        vthree02.transparent = true;
+
+
         var shadowBox = new ShadowBoxs(vthree.renderer);
-        var scene02 = new BoxParticle(vthree.renderer);
-        var scene05 = new Scene05(vthree.renderer);
-        var model = new ModelTest(vthree.renderer);
-//        var scene03 = new TetTest(vthree.renderer);
-//        var scene04 = new NoiseLine(vthree.renderer);
-//		var scene05 = new InstancingBalls(vthree.renderer);
-//        var lines = new InstancingLines(vthree.renderer);
         var boxparticle = new BoxParticle(vthree.renderer);
         var matrix = new MatrxTest(vthree.renderer);
         let imgParticle = new ImgParticle(vthree.renderer);
+        let frame = new Frame(vthree.renderer);
+        let clock = new Clock(vthree.renderer);
+        let box = new FloatingBox(vthree.renderer);
+        let IBP = new InstanceBufferParticle(vthree02.renderer);
+        let logo = new NoiseWaveLogo(vthree.renderer);
 //		var particle = new GPGPUParticleScene(vthree.renderer);
 
 
 
-
-
-
+        vthree02.addScene(IBP);
+        vthree02.addScene(logo);
+//        vthree.addScene(logo);
+        vthree.addScene(box);
+        vthree.addScene(frame);
+        vthree.addScene(clock);
         vthree.addScene(imgParticle);
         vthree.addScene(matrix);
         vthree.addScene(shadowBox);
+
+        //vthree02.addScene(IBP);
 
 //        vthree.addScene(model);
 //        vthree.addScene(boxparticle);
@@ -504,6 +587,7 @@
 
 
         vthree.draw();
+        vthree02.draw();
 
     },false);
 

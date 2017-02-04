@@ -29,14 +29,19 @@ class ImgParticle{
     private imgHeight:number = 100;
 
 
+    private speed:number = 1.0;
+
+    private isSpeedDown:boolean = false;
+
     constructor(renderer:THREE.WebGLRenderer) {
 
         this.renderer = renderer;
         this.createScene();
 
 
-        this.initPosition();
         this.initComputeRenderer();
+        this.initPosition();
+
 
 
     }
@@ -53,7 +58,7 @@ class ImgParticle{
         this.camera.position.z = 100;
 
 
-        this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+        // this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
 
     }
 
@@ -87,6 +92,7 @@ class ImgParticle{
 
         this.velocityUniforms.time = { value: 0.0 };
         this.positionUniforms.time = { Value: 0.0 };
+        this.positionUniforms.timeStep = { Value: 1.0 };
 
 
 
@@ -162,6 +168,8 @@ class ImgParticle{
         particles.matrixAutoUpdate = false;
         particles.updateMatrix();
 
+        particles.frustumCulled = false;
+
         // パーティクルをシーンに追加
         this.scene.add( particles );
     }
@@ -232,18 +240,32 @@ class ImgParticle{
     {
 
     }
-    public keyDown(e:string)
+    public keyDown(e:KeyboardEvent)
     {
+
+        if(e.key = "s")
+        {
+            this.isSpeedDown = true;
+        }
 
     }
 
     public keyUp(e:KeyboardEvent)
     {
-
+        this.isSpeedDown = false;
     }
 
     // ワンフレームごとの処理
     public update() {
+
+
+        if(this.isSpeedDown)
+        {
+            this.speed = 0.5;
+        } else
+        {
+            this.speed = 1.0;
+        }
 
         this.gpuCompute.compute();
 
@@ -254,8 +276,29 @@ class ImgParticle{
         this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget( this.velocityVariable ).texture;
 
 
-        this.velocityUniforms.time.value += 0.01;
-        this.positionUniforms.time.value += 0.01;
+        this.velocityUniforms.time.value += 0.01*this.speed;
+        this.positionUniforms.time.value += 0.01*this.speed;
+
+
+        let step = 0.01;
+        this.timer += step*this.speed;
+        let rad = 30;
+
+        this.camera.position.x = Math.cos(this.timer) * rad;
+        this.camera.position.z = Math.sin(this.timer) * rad + 10*Math.cos(this.timer*0.5);
+
+        this.camera.position.y = Math.sin(this.timer*0.5) * rad*0.8;
+
+
+
+        let lookat = new THREE.Vector3(0,0,0);
+
+        lookat.x = Math.cos(this.timer*0.4)*1;
+        lookat.y = Math.sin(this.timer*0.2)*1;
+        lookat.z = Math.cos(this.timer*0.3)*1;
+        this.camera.lookAt(new THREE.Vector3(0,0,0));
+
+
 
     }
 

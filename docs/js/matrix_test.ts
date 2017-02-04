@@ -139,7 +139,7 @@ class MatrxTest{
         return new THREE.Vector3(x,y,z);
     }
 
-        private snoiseVec3( x:THREE.Vector3 ){
+    private snoiseVec3( x:THREE.Vector3 ){
 
         let s  = this.noise.noise3D( x.x,x.y,x.z );
         let s1 = this.noise.noise3D( x.y - 19.1 , x.z + 33.4 , x.x + 47.2 );

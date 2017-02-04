@@ -1,5 +1,6 @@
+/// <reference path="typings/index.d.ts" />
 import Uint16Attribute = THREE.Uint16Attribute;
-class WireBox
+class WierBox
 {
     public geometry: THREE.BufferGeometry;
     public triangleGeomery:THREE.BufferGeometry;
@@ -36,7 +37,6 @@ class WireBox
 
         this.init();
     }
-
 
     private init()
     {
@@ -210,6 +210,4 @@ class WireBox
     }
 
 
-}/**
- * Created by PurpleUma on 1/8/17.
- */
+}
