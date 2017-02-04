@@ -3,7 +3,7 @@ var FloatingBox = (function () {
         this.objs = [];
         this.timer = 0.0;
         this.objects = [];
-        this.radius = 300;
+        this.radius = 400;
         this.position_origin = [];
         this.animateVector = [];
         this.UPDATE = true;
@@ -135,7 +135,7 @@ var FloatingBox = (function () {
             shininess: 10,
             shading: THREE.FlatShading
         });
-        for (var i = 0; i < 500; i++) {
+        for (var i = 0; i < 700; i++) {
             var theta = Math.random() * Math.PI * 2;
             var phi = Math.random() * Math.PI * 2;
             var object = new THREE.Mesh(geometry, this.material);

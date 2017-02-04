@@ -237,7 +237,7 @@ class Clock {
         var planegeometry = new THREE.PlaneGeometry(200*window.innerWidth/window.innerHeight,200,8,8);
         this.planeMesh = new THREE.Mesh(planegeometry,this.planematerial);
         this.planeMesh.position.z = 1900;
-        this.scene.add(this.planeMesh);
+        // this.scene.add(this.planeMesh);
 
 
     }
@@ -393,7 +393,13 @@ class Clock {
 
             this.groupPos.x = Math.random() * 500 - 250;
             this.groupPos.y = Math.random() * 500 - 250;
-            this.groupPos.z = (Math.random() * 2000 );
+            if(this.groupPos.z <= 1500)
+            {
+                this.groupPos.z = 1100+Math.random()*1000;
+            } else {
+                this.groupPos.z = Math.random()*1000+500;
+            }
+            // this.groupPos.z = (Math.random() * 2000 );
             //console.log(groupPos);
             this.bWhite = !this.bWhite;
             //console.log(bWhite);
@@ -467,7 +473,11 @@ class Clock {
 
     public keyDown(e:KeyboardEvent)
     {
-        this.isCick = true;
+        if(e.code =="Space")
+        {
+            this.isCick = true;
+        }
+
     }
 
     public  initOrbitControls()

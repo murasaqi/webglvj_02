@@ -65,7 +65,6 @@ var ShadowBoxs = (function () {
         planemesh.rotateX(-Math.PI / 2);
         planemesh.position.set(0, 0.1, 0);
         planemesh.receiveShadow = true;
-        this.scene.add(planemesh);
         var geometry = new THREE.PlaneGeometry(10, 10);
         var material = new THREE.MeshPhongMaterial({
             color: 0xffffff,

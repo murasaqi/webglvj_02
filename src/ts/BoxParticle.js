@@ -1,159 +1,228 @@
 var BoxParticle = (function () {
     function BoxParticle(renderer) {
+        this.UPDATE = true;
+        this.END = false;
+        this.gpuparticle = [];
+        this.clickCounter = 0;
+        this.isUpdate = false;
+        this.animateSetting = [];
+        this.speed = 1.0;
         this.time = 0.0;
-        this.WIDTH = 100;
-        this.PARTICLES = this.WIDTH * this.WIDTH;
-        this.time = 0.0;
-        this.simplex = new SimplexNoise();
-        this.scene = new THREE.Scene();
+        this.mode = [];
+        this.modeNum = 0;
+        this.mode.push("circle");
+        this.mode.push("leftright");
         this.renderer = renderer;
-        this.renderer.setClearColor(0xffffff);
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-        this.camera.position.z = 1000;
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-        this.initPosition();
-        this.initComputeRenderer();
-        this.createScene();
-    }
-    BoxParticle.prototype.createScene = function () {
-        var ambLight = new THREE.AmbientLight(0xffffff, 0.5);
-        this.scene.add(ambLight);
+        this.camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 1, 50000);
+        this.camera.position.y = 0;
+        this.camera.position.z = 600;
+        this.scene = new THREE.Scene();
+        var offsetRad = 0;
+        var _width = 700;
+        var _height = 600;
+        for (var i = 0; i < 6; i++) {
+            var vec = 1;
+            offsetRad += Math.PI * 2 / 6;
+            if (i % 2 == 0) {
+                vec = -1;
+            }
+            else {
+                vec = 1;
+            }
+            var setting = {
+                time: -9.0,
+                rotateX: Math.random() * 0.02 - 0.001,
+                rotateY: Math.random() * 0.02 - 0.001,
+                rotateZ: Math.random() * 0.02 - 0.001
+            };
+            this.animateSetting.push(setting);
+            var x = _width * Math.cos(offsetRad);
+            var y = _height * Math.sin(offsetRad);
+            var position = new THREE.Vector3(x, y, 0);
+            this.startUpdate = false;
+            var color = new THREE.Color(0xffffff);
+            this.gpuparticle.push(new GPGPUParticle(this.scene, this.camera, this.renderer, 100, position, color));
+        }
+        this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
         var dLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dLight.position.set(0, 100, 0);
+        dLight.position.set(0, 800, 0);
         this.scene.add(dLight);
-        var dLight02 = new THREE.DirectionalLight(0xffffff, 0.4);
-        dLight02.position.set(0, 0, 100);
-        this.scene.add(dLight02);
-        this.loadModel();
+        var dLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dLight.position.set(0, 0, 300);
+        this.scene.add(dLight);
+    }
+    BoxParticle.prototype.keyUp = function () {
     };
-    BoxParticle.prototype.initComputeRenderer = function () {
-        this.gpuCompute = new GPUComputationRenderer(this.WIDTH, this.WIDTH, this.renderer);
-        var dtPosition = this.gpuCompute.createTexture();
-        var dtVelocity = this.gpuCompute.createTexture();
-        this.fillTextures(dtPosition, dtVelocity);
-        this.velocityVariable = this.gpuCompute.addVariable("textureVelocity", document.getElementById('computeShaderVelocity').textContent, dtVelocity);
-        this.positionVariable = this.gpuCompute.addVariable("texturePosition", document.getElementById('computeShaderPosition').textContent, dtPosition);
-        this.gpuCompute.setVariableDependencies(this.velocityVariable, [this.positionVariable, this.velocityVariable]);
-        this.gpuCompute.setVariableDependencies(this.positionVariable, [this.positionVariable, this.velocityVariable]);
-        var velocityUniforms = this.velocityVariable.material.uniforms;
-        var positionUniforms = this.positionVariable.material.uniforms;
-        velocityUniforms.time = { value: 0.0 };
-        positionUniforms.time = { value: 0.0 };
-        positionUniforms.emitterPos = { value: new THREE.Vector3(0, 0, 0) };
-        positionUniforms.pre_emitterPos = { value: new THREE.Vector3(0, 0, 0) };
-        var error = this.gpuCompute.init();
-        if (error !== null) {
-            console.error(error);
+    BoxParticle.prototype.keyDown = function (event) {
+        if (event.keyCode == 32) {
+            for (var i = 0; i < this.gpuparticle.length; i++) {
+                this.gpuparticle[i].init();
+            }
+            this.modeNum = Math.floor(Math.random() * 2);
+            console.log(this.modeNum);
+            this.initPos(this.modeNum);
         }
-    };
-    BoxParticle.prototype.initPosition = function () {
-        this.geometry = new THREE.BufferGeometry();
-        var positions = new Float32Array(this.PARTICLES * 3);
-        var p = 0;
-        for (var i = 0; i < this.PARTICLES; i++) {
-            positions[p++] = 0;
-            positions[p++] = 0;
-            positions[p++] = 0;
-        }
-        var uvs = new Float32Array(this.PARTICLES * 2);
-        p = 0;
-        for (var j = 0; j < this.WIDTH; j++) {
-            for (var i = 0; i < this.WIDTH; i++) {
-                uvs[p++] = i / (this.WIDTH - 1);
-                uvs[p++] = j / (this.WIDTH - 1);
+        if (event.keyCode == 68) {
+            if (this.clickCounter < this.gpuparticle.length) {
+                this.clickCounter++;
             }
         }
-        this.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-        this.geometry.addAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-        this.particleUniforms = {
-            texturePosition: { value: null },
-            textureVelocity: { value: null },
-            cameraConstant: { value: this.getCameraConstant(this.camera) },
-            map: { value: new THREE.TextureLoader().load("texture/circle.png") }
-        };
-        var material = new THREE.ShaderMaterial({
-            uniforms: this.particleUniforms,
-            vertexShader: document.getElementById('particleVertexShader').textContent,
-            fragmentShader: document.getElementById('particleFragmentShader').textContent
-        });
-        material.extensions.drawBuffers = true;
-        var particles = new THREE.Points(this.geometry, material);
-        particles.matrixAutoUpdate = false;
-        particles.position.set(-45, 90, 40);
-        particles.updateMatrix();
-        this.scene.add(particles);
     };
-    BoxParticle.prototype.fillTextures = function (texturePosition, textureVelocity) {
-        var posArray = texturePosition.image.data;
-        var velArray = textureVelocity.image.data;
-        var offsetrad = 0.0;
-        for (var k = 0, kl = posArray.length; k < kl; k += 4) {
-            offsetrad += 0.01;
-            var x, y, z;
-            var rad = 100;
-            x = Math.cos(offsetrad) * rad;
-            z = Math.sin(offsetrad) * rad;
-            y = Math.sin(offsetrad * 0.3) * rad * 0.3;
-            var range = 100;
-            x = Math.random() * range - range / 2;
-            y = Math.random() * range - range / 2;
-            y = Math.random() * 500;
-            z = Math.random() * range - range / 2;
-            posArray[k + 0] = x;
-            posArray[k + 1] = y;
-            posArray[k + 2] = z;
-            posArray[k + 3] = Math.random() * 100;
-            velArray[k + 0] = Math.random() * 2 - 1;
-            velArray[k + 1] = Math.random() * 2 - 1;
-            velArray[k + 2] = Math.random() * 2 - 1;
-            velArray[k + 3] = Math.random() * 2 - 1;
+    BoxParticle.prototype.initPos = function (mode) {
+        this.clickCounter = 0;
+        switch (mode) {
+            case 0:
+                this.initCircle();
+                break;
+            case 1:
+                this.initLeftup();
+                break;
         }
     };
-    BoxParticle.prototype.loadModel = function () {
-        var onProgress = function (xhr) {
-            if (xhr.lengthComputable) {
-                var percentComplete = xhr.loaded / xhr.total * 100;
-                console.log(Math.round(percentComplete, 2) + '% downloaded');
+    BoxParticle.prototype.initLeftup = function () {
+        this.camera.position.y = 0;
+        this.camera.position.z = 600;
+        this.camera.position.x = 0;
+        this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+        this.speed = 0.25;
+        for (var i = 0; i < 6; i++) {
+            this.animateSetting[i] =
+                {
+                    time: -9.0,
+                    rotateX: Math.random() * 0.04 - 0.02,
+                    rotateY: Math.random() * 0.04 - 0.02,
+                    rotateZ: Math.random() * 0.04 - 0.02,
+                    moveTox: 0.0
+                };
+            var x = 0;
+            if (i < 3) {
+                x = -1100;
+                this.animateSetting[i].moveTox = 300;
             }
-        };
-        var gridHelper = new THREE.GridHelper(400, 40, 0x0000ff, 0x808080);
-        this.scene.add(gridHelper);
-        var onError = function (xhr) { };
-        THREE.Loader.Handlers.add(/\.dds$/i, new THREE.DDSLoader());
-        var mtlLoader = new THREE.MTLLoader();
-        mtlLoader.setPath('obj/');
-        var _scene = this.scene;
-        mtlLoader.load('female_head.mtl', function (materials) {
-            materials.preload();
-            var objLoader = new THREE.OBJLoader();
-            objLoader.setMaterials(materials);
-            objLoader.setPath('obj/');
-            objLoader.load('female_head.obj', function (object) {
-                object.position.y = -95;
-                console.log(object.children[0]);
-                object.position.y = 30;
-                object.children[0].material.shading = THREE.FlatShading;
-                _scene.add(object);
-            }, onProgress, onError);
-        });
+            else {
+                x = 1100;
+                this.animateSetting[i].moveTox = -300;
+            }
+            var y = Math.random() * 400 - 200;
+            var z = Math.random() * 400 - 200;
+            this.startUpdate = false;
+            this.gpuparticle[i].position.set(x, y, z);
+        }
+    };
+    BoxParticle.prototype.initCircle = function () {
+        var offsetRad = 0;
+        var _width = 700;
+        var _height = 600;
+        for (var i = 0; i < 6; i++) {
+            var vec = 1;
+            offsetRad += Math.PI * 2 / 6;
+            if (i % 2 == 0) {
+                vec = -1;
+            }
+            else {
+                vec = 1;
+            }
+            this.animateSetting[i] =
+                {
+                    time: -9.0,
+                    rotateX: Math.random() * 0.02 - 0.001,
+                    rotateY: Math.random() * 0.02 - 0.001,
+                    rotateZ: Math.random() * 0.02 - 0.001
+                };
+            var x = _width * Math.cos(offsetRad);
+            var y = _height * Math.sin(offsetRad);
+            this.startUpdate = false;
+            this.gpuparticle[i].position.set(x, y, 0);
+        }
+    };
+    BoxParticle.prototype.initOrbitControls = function () {
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableKeys = false;
+    };
+    BoxParticle.prototype.resize = function () {
+        for (var i = 0; i < this.gpuparticle.length; i++) {
+            this.gpuparticle[i].resize();
+        }
+    };
+    BoxParticle.prototype.remove = function () {
+        while (this.scene.children.length != 0) {
+            this.scene.remove(this.scene.children[0]);
+            if (this.scene.children[0] == THREE.Mesh) {
+                this.scene.children[0].geometry.dispose();
+                this.scene.children[0].material.dispose();
+            }
+        }
+        ;
+    };
+    BoxParticle.prototype.endEnabled = function () {
+        this.UPDATE = false;
     };
     BoxParticle.prototype.click = function () {
+        if (this.clickCounter == 0) {
+            this.isUpdate = true;
+        }
+        if (this.clickCounter < this.gpuparticle.length) {
+            this.clickCounter++;
+        }
     };
-    BoxParticle.prototype.keyDown = function (keycode) {
-    };
-    BoxParticle.prototype.getCameraConstant = function (camera) {
-        return window.innerHeight / (Math.tan(THREE.Math.DEG2RAD * 0.5 * camera.fov) / camera.zoom);
+    BoxParticle.prototype.easeOutCubic = function (t, b, c, d) {
+        if (t >= 1.0) {
+            t = 1.0;
+        }
+        return c * ((t = t / d - 1) * t * t + 1) + b;
     };
     BoxParticle.prototype.update = function () {
-        this.time += 0.01;
-        this.gpuCompute.compute();
-        this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
-        this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
-        this.velocityVariable.material.uniforms.time.value = this.time;
-        this.positionVariable.material.uniforms.time.value = this.time;
-        var scale = 10.0;
-        this.positionVariable.material.uniforms.pre_emitterPos.value = this.positionVariable.material.uniforms.emitterPos.value;
-        this.positionVariable.material.uniforms.emitterPos.value = new THREE.Vector3(this.simplex.noise3D(this.time, 0, 0) * scale, this.simplex.noise3D(0, this.time, 0) * scale, this.simplex.noise3D(0, 0, this.time) * scale);
+        if (this.UPDATE == false) {
+            this.remove();
+            if (this.scene.children.length == 0) {
+                this.END = true;
+            }
+        }
+        if (this.isUpdate) {
+            this.time += 0.1;
+            if (this.mode[this.modeNum] == "circle") {
+                this.speed = 0.01;
+                for (var i = 0; i < this.clickCounter; i++) {
+                    if (this.gpuparticle[i].position.distanceTo(new THREE.Vector3(0, 0, 0)) < 10) {
+                        this.gpuparticle[i].startUpdate = true;
+                    }
+                    else {
+                        this.animateSetting[i].time += (0 - this.animateSetting[i].time) * 0.01;
+                        this.animateSetting[i].rotateX += (0 - this.animateSetting[i].rotateX) * 0.02;
+                        this.animateSetting[i].rotateY += (0 - this.animateSetting[i].rotateY) * 0.02;
+                        this.animateSetting[i].rotateZ += (0 - this.animateSetting[i].rotateZ) * 0.02;
+                    }
+                    var vec = new THREE.Vector3(this.gpuparticle[i].position.x, this.gpuparticle[i].position.y, this.gpuparticle[i].position.z);
+                    vec.normalize();
+                    this.gpuparticle[i].position.add(vec.multiplyScalar(this.animateSetting[i].time));
+                    this.gpuparticle[i].setRotateXYZ(this.animateSetting[i].rotateX, this.animateSetting[i].rotateY, this.animateSetting[i].rotateZ);
+                }
+                var radius = 500 + 200 * Math.sin(this.time * 0.2);
+                var camX = Math.cos(this.time * 0.1) * radius;
+                var camZ = Math.sin(this.time * 0.1) * radius;
+                var camY = Math.sin(this.time * 0.07) * 300;
+                this.camera.position.x = camX;
+                this.camera.position.z = camZ;
+                this.camera.position.y = camY;
+                this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+            }
+            if (this.mode[this.modeNum] == "leftright") {
+                this.speed += (0.001 - this.speed) * 0.198;
+                for (var i = 0; i < this.gpuparticle.length; i++) {
+                    if (this.speed < 0.0015) {
+                        this.gpuparticle[i].startUpdate = true;
+                    }
+                    this.animateSetting[i].rotateX += (0 - this.animateSetting[i].rotateX) * 0.05;
+                    this.animateSetting[i].rotateY += (0 - this.animateSetting[i].rotateY) * 0.05;
+                    this.animateSetting[i].rotateZ += (0 - this.animateSetting[i].rotateZ) * 0.05;
+                    this.gpuparticle[i].setRotateXYZ(this.animateSetting[i].rotateX, this.animateSetting[i].rotateY, this.animateSetting[i].rotateZ);
+                    this.gpuparticle[i].position.x += (this.animateSetting[i].moveTox - this.gpuparticle[i].position.x) * this.speed;
+                }
+            }
+        }
+        for (var i = 0; i < this.gpuparticle.length; i++) {
+            this.gpuparticle[i].update();
+        }
     };
     return BoxParticle;
 }());

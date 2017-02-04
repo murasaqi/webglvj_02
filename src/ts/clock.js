@@ -135,7 +135,6 @@ var Clock = (function () {
         var planegeometry = new THREE.PlaneGeometry(200 * window.innerWidth / window.innerHeight, 200, 8, 8);
         this.planeMesh = new THREE.Mesh(planegeometry, this.planematerial);
         this.planeMesh.position.z = 1900;
-        this.scene.add(this.planeMesh);
     };
     Clock.prototype.createTexture = function (text, color) {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -244,7 +243,12 @@ var Clock = (function () {
             this.rotate.z = Math.random() * 5 - 2.5;
             this.groupPos.x = Math.random() * 500 - 250;
             this.groupPos.y = Math.random() * 500 - 250;
-            this.groupPos.z = (Math.random() * 2000);
+            if (this.groupPos.z <= 1500) {
+                this.groupPos.z = 1100 + Math.random() * 1000;
+            }
+            else {
+                this.groupPos.z = Math.random() * 1000 + 500;
+            }
             this.bWhite = !this.bWhite;
             var scale = 0.9;
             if (this.bWhite) {
@@ -288,7 +292,9 @@ var Clock = (function () {
     Clock.prototype.keyUp = function () {
     };
     Clock.prototype.keyDown = function (e) {
-        this.isCick = true;
+        if (e.code == "Space") {
+            this.isCick = true;
+        }
     };
     Clock.prototype.initOrbitControls = function () {
     };

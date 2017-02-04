@@ -520,6 +520,7 @@
 <script type="text/javascript" src="js/frame.js"></script>
 <script type="text/javascript" src="js/clock.js"></script>
 <script type="text/javascript" src="js/box.js"></script>
+<script type="text/javascript" src="js/BoxParticle.js"></script>
 <script type="text/javascript" src="js/InstanceBufferParticle.js"></script>
 <script type="text/javascript" src="js/NoiseWaveLogo.js"></script>
 <script type="text/javascript" src="js/instancing_billboards_test.js"></script>
@@ -556,34 +557,40 @@
         vthree02.transparent = true;
 
 
-        var shadowBox = new ShadowBoxs(vthree.renderer);
-        var boxparticle = new BoxParticle(vthree.renderer);
-//        var matrix = new MatrxTest(vthree.renderer);
+        let model = new ModelTest(vthree.renderer);
+        //var shadowBox = new ShadowBoxs(vthree02.renderer);
+ //        var matrix = new MatrxTest(vthree.renderer);
         let imgParticle = new ImgParticle(vthree.renderer);
         let frame = new Frame(vthree.renderer);
         let clock = new Clock(vthree.renderer);
         let box = new FloatingBox(vthree.renderer);
         let IBP = new InstanceBufferParticle(vthree02.renderer);
         let logo = new NoiseWaveLogo(vthree.renderer);
-//		var particle = new GPGPUParticleScene(vthree.renderer);
+
+        let boxparticle = new BoxParticle(vthree.renderer);
+		var particle = new GPGPUParticleScene(vthree.renderer);
 
 
+
+        //vthree02.addScene(shadowBox);
+
+        vthree02.addScene(model);
+        vthree02.addScene(logo);
 
         vthree02.addScene(IBP);
-        vthree02.addScene(logo);
-//        vthree.addScene(logo);
+
+
+
         vthree.addScene(box);
         vthree.addScene(frame);
         vthree.addScene(clock);
         vthree.addScene(imgParticle);
-        vthree.addScene(matrix);
-        vthree.addScene(shadowBox);
+//        vthree.addScene(matrix);
+
 
         //vthree02.addScene(IBP);
 
-//        vthree.addScene(model);
-//        vthree.addScene(boxparticle);
-//        vthree.addScene(scene01);
+
 
 
         vthree.draw();

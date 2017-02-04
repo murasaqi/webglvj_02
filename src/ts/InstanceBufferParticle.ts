@@ -109,7 +109,7 @@ class InstanceBufferParticle {
         // this.camera.position.y = 100*Math.sin(this.timer);
         // this.camera.position.x = 100* Math.cos(this.timer);
 
-        var rad = 600 + Math.sin(this.timer)*200;
+        var rad = 500 + Math.sin(this.timer)*200;
 
         this.camera.position.x = Math.sin(this.timer*0.4) * Math.cos(this.timer*0.3) * rad;
         this.camera.position.y = Math.cos(this.timer*0.4) * rad;

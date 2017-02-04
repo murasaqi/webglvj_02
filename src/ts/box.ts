@@ -12,7 +12,7 @@ class FloatingBox {
 
     private timer:number = 0.0;
     private objects:THREE.Mesh[] = [];
-    private radius:number = 300;
+    private radius:number = 400;
     private position_origin:number[] = [];
     private animateVector:THREE.Vector3[] = [];
     private pre_sec;
@@ -229,7 +229,7 @@ class FloatingBox {
 
 
 
-        for ( var i = 0; i < 500; i ++ ) {
+        for ( var i = 0; i < 700; i ++ ) {
 
             var theta = Math.random()*Math.PI*2;
             var phi = Math.random()*Math.PI*2;
