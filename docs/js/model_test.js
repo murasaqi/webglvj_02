@@ -62,6 +62,7 @@ var ModelTest = (function () {
         }
     };
     ModelTest.prototype.update = function () {
+        this.renderer.setClearColor(0x000000, 0.0);
         if (Math.random() < 0.02 && (this.nextTime - this.time) < 0.01) {
             this.nextTime += Math.random() * Math.PI / 3 + Math.PI / 3;
         }

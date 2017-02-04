@@ -264,7 +264,7 @@ class ImgParticle{
             this.speed = 0.5;
         } else
         {
-            this.speed = 1.0;
+            this.speed = 2.0;
         }
 
         this.gpuCompute.compute();
@@ -285,7 +285,7 @@ class ImgParticle{
         let rad = 30;
 
         this.camera.position.x = Math.cos(this.timer) * rad;
-        this.camera.position.z = Math.sin(this.timer) * rad + 10*Math.cos(this.timer*0.5);
+        this.camera.position.z = Math.sin(this.timer) * rad + 30*Math.cos(this.timer*0.5);
 
         this.camera.position.y = Math.sin(this.timer*0.5) * rad*0.8;
 

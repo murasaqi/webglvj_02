@@ -138,6 +138,8 @@ class ModelTest{
     // ワンフレームごとの処理
     public update() {
 
+        this.renderer.setClearColor(0xaaaaaa,0.0);
+
         if(Math.random() < 0.02 && (this.nextTime - this.time) < 0.01)
         {
             this.nextTime += Math.random()*Math.PI/3 + Math.PI/3;

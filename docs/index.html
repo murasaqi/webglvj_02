@@ -557,9 +557,8 @@
         vthree02.transparent = true;
 
 
-        let model = new ModelTest(vthree.renderer);
-        //var shadowBox = new ShadowBoxs(vthree02.renderer);
- //        var matrix = new MatrxTest(vthree.renderer);
+        let model = new ModelTest(vthree02.renderer);
+        var shadowBox = new ShadowBoxs(vthree02.renderer);
         let imgParticle = new ImgParticle(vthree.renderer);
         let frame = new Frame(vthree.renderer);
         let clock = new Clock(vthree.renderer);
@@ -583,6 +582,7 @@
 
         vthree.addScene(box);
         vthree.addScene(frame);
+        vthree.addScene(shadowBox);
         vthree.addScene(clock);
         vthree.addScene(imgParticle);
 //        vthree.addScene(matrix);

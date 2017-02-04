@@ -65,6 +65,7 @@ var ShadowBoxs = (function () {
         planemesh.rotateX(-Math.PI / 2);
         planemesh.position.set(0, 0.1, 0);
         planemesh.receiveShadow = true;
+        this.scene.add(planemesh);
         var geometry = new THREE.PlaneGeometry(10, 10);
         var material = new THREE.MeshPhongMaterial({
             color: 0xffffff,
@@ -74,6 +75,7 @@ var ShadowBoxs = (function () {
         mesh.rotateX(-Math.PI / 2);
         mesh.position.set(0, -20, 0);
         mesh.receiveShadow = true;
+        this.scene.add(mesh);
         for (var i = 0; i < this.planeGeo.vertices.length; i++) {
             var dist = this.planeGeo.vertices[i].distanceTo(new THREE.Vector3(0, 0, 0));
         }
