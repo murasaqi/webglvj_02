@@ -349,7 +349,7 @@ var GPGPUParticle_frame = (function () {
         }
     };
     GPGPUParticle_frame.prototype.getCameraConstant = function (camera) {
-        return window.innerHeight / (Math.tan(THREE.Math.DEG2RAD * 0.5 * camera.fov) / camera.zoom * 0.5);
+        return window.innerHeight / (Math.tan(THREE.Math.DEG2RAD * 0.5 * camera.fov) / camera.zoom * 0.1);
     };
     GPGPUParticle_frame.prototype.resize = function () {
         this.particleUniforms.cameraConstant.value = this.getCameraConstant(this.camera);
