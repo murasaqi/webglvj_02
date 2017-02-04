@@ -465,9 +465,9 @@ class Clock {
 
     }
 
-    public keyDown(event)
+    public keyDown(e:KeyboardEvent)
     {
-
+        this.isCick = true;
     }
 
     public  initOrbitControls()
