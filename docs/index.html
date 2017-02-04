@@ -525,6 +525,8 @@
 <script type="text/javascript" src="js/NoiseWaveLogo.js"></script>
 <script type="text/javascript" src="js/instancing_billboards_test.js"></script>
 
+<script type="text/javascript" src="js/convex.js"></script>
+
 <style>
     body {
         font-weight: lighter;
@@ -565,7 +567,7 @@
         let box = new FloatingBox(vthree.renderer);
         let IBP = new InstanceBufferParticle(vthree02.renderer);
         let logo = new NoiseWaveLogo(vthree.renderer);
-
+        let convex = new Convex(vthree.renderer);
         let boxparticle = new BoxParticle(vthree.renderer);
 		var particle = new GPGPUParticleScene(vthree.renderer);
 
@@ -585,6 +587,7 @@
         vthree.addScene(shadowBox);
         vthree.addScene(clock);
         vthree.addScene(imgParticle);
+        vthree.addScene(convex);
 //        vthree.addScene(matrix);
 
 
