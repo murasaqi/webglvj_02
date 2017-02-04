@@ -271,7 +271,7 @@ class GPGPUParticle_frame {
     private boxMesh:THREE.Mesh;
     private color:THREE.Color;
     private boxRemove:boolean;
-    private PARTICLE_NUM:number = 800;
+    private PARTICLE_NUM:number = 700;
     private group:THREE.Group;
     public rotation:any;
 

@@ -220,7 +220,7 @@ var particleShader_frame = {
 };
 var GPGPUParticle_frame = (function () {
     function GPGPUParticle_frame(scene, camera, renderer, width, height, position, color) {
-        this.PARTICLE_NUM = 800;
+        this.PARTICLE_NUM = 700;
         this.time = 0.0;
         this.isSpeedDown = false;
         this.radian = 0.0;
