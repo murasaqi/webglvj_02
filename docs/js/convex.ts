@@ -146,8 +146,8 @@ class Convex {
         //
         // });
 
-        this.color = 0xffffff*Math.random();
-
+        this.color = new THREE.Color();
+        this.color.setRGB(Math.random()*0.5+0.5, 0.5, Math.random()*0.5+0.5);
         this.meshMaterial = new THREE.MeshPhongMaterial( {
             color: this.color,
             shading:THREE.FlatShading,
@@ -212,6 +212,19 @@ class Convex {
 
         return new THREE.Vector3( THREE.Math.randFloat( - 1, 1 ), THREE.Math.randFloat( - 1, 1 ), THREE.Math.randFloat( - 1, 1 ) );
 
+    }
+
+    public keyDown(e:KeyboardEvent)
+    {
+        if(e.key =="c")
+        {
+            this.color.setRGB(Math.random()*0.5+0.5, 0.5, Math.random()*0.5+0.5);
+
+            for(var i = 0; i < this.convexmeshs.length; i++)
+            {
+                this.convexmeshs[i].material.color = this.color;
+            }
+        }
     }
 
 

@@ -568,7 +568,7 @@
         let IBP = new InstanceBufferParticle(vthree02.renderer);
         let logo = new NoiseWaveLogo(vthree.renderer);
         let convex = new Convex(vthree.renderer);
-        let boxparticle = new BoxParticle(vthree.renderer);
+        let boxparticle = new BoxParticle(vthree02.renderer);
 		var particle = new GPGPUParticleScene(vthree.renderer);
 
 
@@ -582,6 +582,7 @@
 
 
 
+        vthree02.addScene(boxparticle);
         vthree.addScene(box);
         vthree.addScene(frame);
         vthree.addScene(shadowBox);

@@ -129,6 +129,28 @@ class BoxParticle {
         }
 
 
+        if(event.key =="b")
+        {
+            if(this.clickCounter == 0)
+            {
+                this.isUpdate = true;
+
+            }
+
+
+            // particle start
+            // this.gpuparticle[this.clickCounter].startUpdate = true;
+
+
+
+            if(this.clickCounter < this.gpuparticle.length)
+            {
+                this.clickCounter++;
+            }
+
+        }
+
+
 
 
 
@@ -278,22 +300,22 @@ class BoxParticle {
     {
 
 
-        if(this.clickCounter == 0)
-        {
-            this.isUpdate = true;
-
-        }
-
-
-        // particle start
-        // this.gpuparticle[this.clickCounter].startUpdate = true;
-
-
-
-        if(this.clickCounter < this.gpuparticle.length)
-        {
-            this.clickCounter++;
-        }
+        // if(this.clickCounter == 0)
+        // {
+        //     this.isUpdate = true;
+        //
+        // }
+        //
+        //
+        // // particle start
+        // // this.gpuparticle[this.clickCounter].startUpdate = true;
+        //
+        //
+        //
+        // if(this.clickCounter < this.gpuparticle.length)
+        // {
+        //     this.clickCounter++;
+        // }
 
 
 

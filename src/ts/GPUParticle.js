@@ -162,8 +162,8 @@ var computeShaderVelocity = {
         '    //vec3 n = normalize(translate)*-1.0+normalize(dist);',
         '    vec3 n = normalize(dist);',
         '    vel.x=snoise(vec3(pos.x*scale, pos.y*scale,time));',
-        '    vel.y=snoise(vec3(pos.y*scale, pos.x*scale,time));',
-        '    vel.z=snoise(vec3(pos.z*scale, pos.y*scale,time));',
+        '    vel.y=snoise(vec3(pos.x*scale, pos.y*scale,time));',
+        '    vel.z=snoise(vec3(pos.x*scale, pos.y*scale,time));',
         '    vel += n*1.0;',
         '    //vel.z * = 1.0;',
         '    // ノイズの値を位置情報から生成',
@@ -216,13 +216,12 @@ var particleShader = {
         '    if ( f > size ) {',
         '        discard;',
         '    }',
-        '    gl_FragColor =vec4(color.xyz,1.0);',
+        '    gl_FragColor =vec4(color.xyz,alpha);',
         '}',
     ].join('\n')
 };
 var GPGPUParticle = (function () {
     function GPGPUParticle(scene, camera, renderer, width, position, color) {
-        this.simplex = new SimplexNoise();
         this.WIDTH = width;
         this.PARTICLES = 500 * 500;
         this.scene = scene;
@@ -236,9 +235,15 @@ var GPGPUParticle = (function () {
         this.rotation = this.group.rotation;
         this.initComputeRenderer();
         this.initPosition();
+        this.createBox();
         this.boxRemove = false;
-        this.updateGpuCompute();
     }
+    GPGPUParticle.prototype.createBox = function () {
+        this.boxGeomery = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, this.boxWidth, 1, 1, 1);
+        this.boxMaterial = new THREE.MeshLambertMaterial({ color: this.color.getHex(), wireframe: false, transparent: true, opacity: 1.0 });
+        this.boxMesh = new THREE.Mesh(this.boxGeomery, this.boxMaterial);
+        this.group.add(this.boxMesh);
+    };
     GPGPUParticle.prototype.setRotateXYZ = function (x, y, z) {
         this.group.rotateX(x);
         this.group.rotateX(y);
@@ -250,7 +255,6 @@ var GPGPUParticle = (function () {
         var dtVelocity = this.gpuCompute.createTexture();
         var dtOffset = this.gpuCompute.createTexture();
         this.fillTextures(dtPosition, dtVelocity, dtOffset);
-        this.startPosition = dtPosition;
         this.velocityVariable = this.gpuCompute.addVariable("textureVelocity", computeShaderVelocity.shader, dtVelocity);
         this.positionVariable = this.gpuCompute.addVariable("texturePosition", computeShaderPosition.shader, dtPosition);
         this.offsetVariable = this.gpuCompute.addVariable("offsetValue", offsetValueShader.shader, dtOffset);
@@ -282,14 +286,10 @@ var GPGPUParticle = (function () {
         this.geometry = new THREE.BufferGeometry();
         var positions = new Float32Array(this.PARTICLES * 3);
         var p = 0;
-        var posArray = this.startPosition.image.data;
         for (var i = 0; i < this.PARTICLES; i++) {
-            p++;
-            positions[p] = posArray[p];
-            p++;
-            positions[p] = posArray[p];
-            p++;
-            positions[p] = posArray[p];
+            positions[p++] = 0;
+            positions[p++] = 0;
+            positions[p++] = 0;
         }
         var uvs = new Float32Array(this.PARTICLES * 2);
         p = 0;
@@ -328,17 +328,14 @@ var GPGPUParticle = (function () {
         var posArray = texturePosition.image.data;
         var velArray = textureVelocity.image.data;
         var offsetArray = offsetValue.image.data;
-        var couter = 0;
         for (var k = 0, kl = posArray.length; k < kl; k += 4) {
             var x, y, z;
             var width = this.boxWidth;
             x = Math.random() * width - width / 2;
             z = Math.random() * width - width / 2;
             y = Math.random() * width - width / 2;
-            couter += 0.01;
-            var value = this.simplex.noise3D(x * 0.5, y * 0.5, couter);
             posArray[k + 0] = x;
-            posArray[k + 1] = value;
+            posArray[k + 1] = y;
             posArray[k + 2] = z;
             posArray[k + 3] = 1.0;
             velArray[k + 0] = Math.random() * 0.2 - 0.1;
@@ -363,16 +360,31 @@ var GPGPUParticle = (function () {
     GPGPUParticle.prototype.init = function () {
         this.positionUniforms.init.value = 1.0;
     };
-    GPGPUParticle.prototype.updateGpuCompute = function () {
-        this.gpuCompute.compute();
-        this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
-        this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
-        this.velocityUniforms.translate.value = this.position;
-    };
     GPGPUParticle.prototype.update = function () {
         this.renderer.setClearColor(0x000000, 1.0);
         if (this.startUpdate) {
-            this.updateGpuCompute();
+            if (this.particleUniforms.alpha.value >= 0.0) {
+                this.gpuCompute.compute();
+                this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
+                this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
+                this.positionUniforms.alpha.value = this.particleUniforms.alpha.value;
+                this.velocityUniforms.translate.value = this.position;
+            }
+            else {
+            }
+            this.boxMaterial.opacity = 1.0;
+            this.boxMaterial.color.set(0x000000);
+            if (!this.boxRemove) {
+                this.scene.remove(this.boxMesh);
+                this.boxGeomery.dispose();
+                this.boxMaterial.dispose();
+                this.boxRemove = true;
+            }
+        }
+        if (this.positionUniforms.init.value == 1.0) {
+            this.positionUniforms.init.value = 0.0;
+            this.startUpdate = false;
+            this.boxMaterial.color.set(0xffffff);
         }
     };
     return GPGPUParticle;
@@ -381,29 +393,39 @@ var GPGPUParticleScene = (function () {
     function GPGPUParticleScene(renderer) {
         this.UPDATE = true;
         this.END = false;
+        this.gpuparticle = [];
         this.clickCounter = 0;
         this.isUpdate = false;
+        this.animateSetting = [];
         this.speed = 1.0;
         this.renderer = renderer;
         this.camera = new THREE.PerspectiveCamera(110, window.innerWidth / window.innerHeight, 1, 50000);
         this.camera.position.y = 0;
-        this.camera.position.z = 300;
+        this.camera.position.z = 600;
         this.scene = new THREE.Scene();
-        var vec = 1;
-        var setting = {
-            direction: vec * -1,
-            moveToX: vec * 2,
-            y: Math.random() - 0.5,
-            z: Math.random() - 0.5,
-            rotateX: Math.random() - 0.5,
-            rotateY: Math.random() - 0.5,
-            rotateZ: Math.random() - 0.5
-        };
-        this.animateSetting = setting;
-        var position = new THREE.Vector3(vec * (200 + Math.random() * 100), Math.random() * 200 - 100, Math.random() * 200 - 100);
-        this.startUpdate = false;
-        var color = new THREE.Color(0xffffff);
-        this.gpuparticle = new GPGPUParticle(this.scene, this.camera, this.renderer, 100, position, color);
+        for (var i = 0; i < 6; i++) {
+            var vec = 1;
+            if (i % 2 == 0) {
+                vec = -1;
+            }
+            else {
+                vec = 1;
+            }
+            var setting = {
+                direction: vec * -1,
+                moveToX: vec * 2,
+                y: Math.random() - 0.5,
+                z: Math.random() - 0.5,
+                rotateX: Math.random() - 0.5,
+                rotateY: Math.random() - 0.5,
+                rotateZ: Math.random() - 0.5
+            };
+            this.animateSetting.push(setting);
+            var position = new THREE.Vector3(vec * (200 + Math.random() * 100), Math.random() * 200 - 100, Math.random() * 200 - 100);
+            this.startUpdate = false;
+            var color = new THREE.Color(0xffffff);
+            this.gpuparticle.push(new GPGPUParticle(this.scene, this.camera, this.renderer, 100, position, color));
+        }
         this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
         var dLight = new THREE.DirectionalLight(0xffffff, 0.8);
         dLight.position.set(0, 800, 0);
@@ -421,7 +443,9 @@ var GPGPUParticleScene = (function () {
         this.controls.enableKeys = false;
     };
     GPGPUParticleScene.prototype.resize = function () {
-        this.gpuparticle.resize();
+        for (var i = 0; i < this.gpuparticle.length; i++) {
+            this.gpuparticle[i].resize();
+        }
     };
     GPGPUParticleScene.prototype.remove = function () {
         while (this.scene.children.length != 0) {
@@ -443,14 +467,37 @@ var GPGPUParticleScene = (function () {
             this.isUpdate = true;
         }
         if (this.clickCounter == 1) {
-            this.gpuparticle.startUpdate = true;
+            for (var i = 0; i < this.gpuparticle.length; i++) {
+                this.gpuparticle[i].startUpdate = true;
+            }
         }
         else {
         }
         this.clickCounter++;
     };
     GPGPUParticleScene.prototype.update = function () {
-        this.gpuparticle.update();
+        if (this.UPDATE == false) {
+            this.remove();
+            if (this.scene.children.length == 0) {
+                this.END = true;
+            }
+        }
+        if (this.isUpdate) {
+            for (var i = 0; i < this.gpuparticle.length; i++) {
+                this.gpuparticle[i].position.x += this.animateSetting[i].direction * this.speed;
+                if (Math.abs(this.gpuparticle[i].position.x) <= 10) {
+                    this.speed = 0.01;
+                }
+                if (Math.abs(this.gpuparticle[i].position.x) <= 10) {
+                    for (var i = 0; i < this.gpuparticle.length; i++) {
+                        this.gpuparticle[i].startUpdate = true;
+                    }
+                }
+            }
+        }
+        for (var i = 0; i < this.gpuparticle.length; i++) {
+            this.gpuparticle[i].update();
+        }
     };
     return GPGPUParticleScene;
 }());

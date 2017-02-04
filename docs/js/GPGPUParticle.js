@@ -501,4 +501,4 @@ var GPGPUParticleScene = (function () {
     };
     return GPGPUParticleScene;
 }());
-//# sourceMappingURL=GPUParticle.js.map
+//# sourceMappingURL=GPGPUParticle.js.map

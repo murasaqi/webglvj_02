@@ -167,8 +167,8 @@ var computeShaderVelocity = {
             '    //vec3 n = normalize(translate)*-1.0+normalize(dist);',
             '    vec3 n = normalize(dist);',
             '    vel.x=snoise(vec3(pos.x*scale, pos.y*scale,time));',
-            '    vel.y=snoise(vec3(pos.y*scale, pos.x*scale,time));',
-            '    vel.z=snoise(vec3(pos.z*scale, pos.y*scale,time));',
+            '    vel.y=snoise(vec3(pos.x*scale, pos.y*scale,time));',
+            '    vel.z=snoise(vec3(pos.x*scale, pos.y*scale,time));',
             '    vel += n*1.0;',
             '    //vel.z * = 1.0;',
             '    // ノイズの値を位置情報から生成',
@@ -228,7 +228,7 @@ var particleShader =
             '    if ( f > size ) {',
             '        discard;',
             '    }',
-            '    gl_FragColor =vec4(color.xyz,1.0);',
+            '    gl_FragColor =vec4(color.xyz,alpha);',
             '}',
 
         ].join('\n')
@@ -254,7 +254,7 @@ class GPGPUParticle {
 
     private scene:THREE.Scene;
     private camera:THREE.Camera;
-    private renderer:THREE.WebGLRenderer;
+    private renderer:THREE.Renderer;
     public position:any;
     private boxWidth:number;
     public startUpdate:boolean;
@@ -266,16 +266,12 @@ class GPGPUParticle {
     private boxMesh:THREE.Mesh;
     private color:THREE.Color;
     private boxRemove:boolean;
-    private startPosition:THREE.WebGLTexture;
-    private simplex:Object;
 
     private group:THREE.Group;
 
 
-    constructor(scene:THREE.Scene, camera:THREE.Camera, renderer:THREE.WebGLRenderer,width:number,position:THREE.Vector3,color:THREE.Color)
+    constructor(scene, camera, renderer,width,position,color)
     {
-
-        this.simplex = new SimplexNoise();
 
         this.WIDTH = width;
         this.PARTICLES =  500 * 500;
@@ -292,16 +288,20 @@ class GPGPUParticle {
         this.rotation = this.group.rotation;
         this.initComputeRenderer();
         this.initPosition();
-
-        // this.createBox();
+        this.createBox();
 
         this.boxRemove = false;
-
-
-        this.updateGpuCompute();
     }
 
-
+    private createBox()
+    {
+        this.boxGeomery = new THREE.BoxGeometry(this.boxWidth,this.boxWidth,this.boxWidth,1,1,1);
+        // var color = new THREE.Color(0xBF53F8);
+        this.boxMaterial = new THREE.MeshLambertMaterial({color:this.color.getHex(),wireframe:false,transparent:true,opacity:1.0});
+        this.boxMesh = new THREE.Mesh(this.boxGeomery,this.boxMaterial);
+        this.group.add(this.boxMesh)
+        // this.scene.add(this.boxMesh);
+    }
 
     public setRotateXYZ(x,y,z)
     {
@@ -324,10 +324,8 @@ class GPGPUParticle {
 
         // おまじない
         this.fillTextures(dtPosition, dtVelocity,dtOffset);
-        this.startPosition = dtPosition;
 
         // shader Programの登録
-
         this.velocityVariable = this.gpuCompute.addVariable( "textureVelocity",computeShaderVelocity.shader, dtVelocity );
         this.positionVariable = this.gpuCompute.addVariable( "texturePosition", computeShaderPosition.shader, dtPosition );
         this.offsetVariable = this.gpuCompute.addVariable( "offsetValue", offsetValueShader.shader, dtOffset );
@@ -370,18 +368,14 @@ class GPGPUParticle {
         var positions = new Float32Array( this.PARTICLES * 3 );
         var p = 0;
 
-        let posArray = this.startPosition.image.data;
         // 一旦0でうめる。texturePositionの値を参照するためとりあえず埋めれば良い。
         for ( var i = 0; i < this.PARTICLES; i++ ) {
             // x
-            p++;
-            positions[ p ] = posArray[p];
+            positions[ p++ ] = 0;
             // y
-            p++;
-            positions[ p ] = posArray[p];
+            positions[ p++ ] = 0;
             // z
-            p++;
-            positions[ p ] = posArray[p];
+            positions[ p++ ] = 0;
         }
 
         // テクスチャーに保存した情報を取り出すためにvec2(x,y)座標を記録
@@ -438,7 +432,6 @@ class GPGPUParticle {
 
     }
 
-
     private fillTextures(texturePosition, textureVelocity,offsetValue)
     {
         // 場所と移動方向を保存するテクスチャーの初期化
@@ -446,22 +439,17 @@ class GPGPUParticle {
         var velArray = textureVelocity.image.data;
         var offsetArray = offsetValue.image.data;
 
-        let couter = 0;
         for ( var k = 0, kl = posArray.length; k < kl; k += 4 ) {
             // Position
             var x, y, z;
             var width = this.boxWidth;
 
-
             x = Math.random()*width-width/2;
             z = Math.random()*width-width/2;
             y = Math.random()*width-width/2;
             // Fill in texture values
-            couter += 0.01;
-            var value = this.simplex.noise3D(x*0.5,y*0.5,couter);
-
             posArray[ k + 0 ] = x;
-            posArray[ k + 1 ] = value;
+            posArray[ k + 1 ] = y;
             posArray[ k + 2 ] = z;
             posArray[ k + 3 ] = 1.0;
             velArray[ k + 0 ] = Math.random()*0.2-0.1;
@@ -498,19 +486,6 @@ class GPGPUParticle {
         this.positionUniforms.init.value = 1.0;
     }
 
-    public updateGpuCompute()
-    {
-        // gpuComputeをアップデート
-        this.gpuCompute.compute();
-        // 前のフレームの情報でパーティクルの位置情報を上書き
-        this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
-        // 前のフレームの情報でパーティクルの移動方向情報を上書き
-        this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
-        // this.particleUniforms.alpha.value -= 0.001;
-        this.velocityUniforms.translate.value = this.position;
-    }
-
-
     public update()
     {
         this.renderer.setClearColor ( 0x000000, 1.0 );
@@ -521,18 +496,58 @@ class GPGPUParticle {
         if(this.startUpdate)
         {
 
-            this.updateGpuCompute();
+
+
+
+
+            if(this.particleUniforms.alpha.value >= 0.0) {
+
+
+                // gpuComputeをアップデート
+                this.gpuCompute.compute();
+                // 前のフレームの情報でパーティクルの位置情報を上書き
+                this.particleUniforms.texturePosition.value = this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
+                // 前のフレームの情報でパーティクルの移動方向情報を上書き
+                this.particleUniforms.textureVelocity.value = this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
+                // this.particleUniforms.alpha.value -= 0.001;
+                this.positionUniforms.alpha.value = this.particleUniforms.alpha.value;
+                this.velocityUniforms.translate.value = this.position;
+
+            } else {
+
+            }
+
+
+
+
+            this.boxMaterial.opacity = 1.0;
+            this.boxMaterial.color.set(0x000000);
+
+            if(!this.boxRemove)
+            {
+                this.scene.remove(this.boxMesh);
+                this.boxGeomery.dispose();
+                this.boxMaterial.dispose();
+                this.boxRemove = true;
+            }
+
 
         }
 
 
-
+        if(this.positionUniforms.init.value == 1.0)
+        {
+            this.positionUniforms.init.value = 0.0;
+            this.startUpdate =false;
+            this.boxMaterial.color.set(0xffffff);
+        }
 
     }
 
 }
 
 // ************************ scene ************************ //
+
 class GPGPUParticleScene {
 
     public scene: THREE.Scene;
@@ -544,13 +559,13 @@ class GPGPUParticleScene {
     public UPDATE:boolean = true;
     public END:boolean = false;
     public renderer:any;
-    private gpuparticle:GPGPUParticle;
+    private gpuparticle:any[]= [];
     private startUpdate:boolean;
 
     private material:any;
     private clickCounter:number = 0;
     private isUpdate:boolean = false;
-    private animateSetting:Object;
+    private animateSetting:Object[]=[];
     private speed:number = 1.0;
 
 
@@ -563,11 +578,18 @@ class GPGPUParticleScene {
         this.renderer = renderer
         this.camera = new THREE.PerspectiveCamera( 110, window.innerWidth / window.innerHeight, 1,50000 );
         this.camera.position.y = 0;
-        this.camera.position.z = 300;
+        this.camera.position.z = 600;
         this.scene = new THREE.Scene();
 
+        for(var i = 0; i < 6; i++)
+        {
+            var vec = 1;
 
-            let vec = 1;
+            if(i%2 == 0){
+                vec = -1;
+            } else {
+                vec = 1;
+            }
 
             var setting =
             {
@@ -579,14 +601,16 @@ class GPGPUParticleScene {
                 rotateY:Math.random()-0.5,
                 rotateZ:Math.random()-0.5
             };
-            this.animateSetting = setting;
+            this.animateSetting.push(setting);
 
             var position = new THREE.Vector3(vec*(200+Math.random()*100),Math.random()*200-100,Math.random()*200-100);
             this.startUpdate = false;
             var color = new THREE.Color(0xffffff);
             // scene, camera, renderer,width,position,color
-            this.gpuparticle = new GPGPUParticle(this.scene,this.camera,this.renderer,100,position,color);
+            this.gpuparticle.push( new GPGPUParticle(this.scene,this.camera,this.renderer,100,position,color));
 
+
+        }
 
 
 
@@ -598,7 +622,6 @@ class GPGPUParticleScene {
         var dLight = new THREE.DirectionalLight(0xffffff,0.8);
         dLight.position.set(0,0,300);
         this.scene.add(dLight);
-
 
 
 
@@ -623,8 +646,10 @@ class GPGPUParticleScene {
 
     public resize()
     {
-            this.gpuparticle.resize();
-
+        for(var i = 0; i < this.gpuparticle.length; i++)
+        {
+            this.gpuparticle[i].resize();
+        }
     }
 
 
@@ -644,6 +669,8 @@ class GPGPUParticleScene {
                 this.scene.children[0].geometry.dispose();
                 this.scene.children[0].material.dispose();
             }
+
+
 
         };
 
@@ -670,7 +697,10 @@ class GPGPUParticleScene {
 
         if(this.clickCounter == 1)
         {
-            this.gpuparticle.startUpdate = true;
+            for(var i = 0; i < this.gpuparticle.length; i++)
+            {
+                this.gpuparticle[i].startUpdate = true;
+            }
 
         } else {
 
@@ -686,9 +716,61 @@ class GPGPUParticleScene {
 
     public update() {
 
+        //console.log(this.END);
+        if (this.UPDATE == false) {
+            //this.scene.remove(this.scene.children[0]);
+            this.remove();
+            if (this.scene.children.length == 0) {
+                this.END = true;
+            }
 
-        this.gpuparticle.update();
+        }
 
+
+
+
+        // this.camera.position.z -= 1;
+
+
+        if(this.isUpdate)
+        {
+            for(var i = 0; i < this.gpuparticle.length; i++)
+            {
+
+                this.gpuparticle[i].position.x += this.animateSetting[i].direction*this.speed;
+                // this.gpuparticle[i].rotation.set(
+                //     this.animateSetting[i].rotateX,
+                //     this.animateSetting[i].rotateY,
+                //     this.animateSetting[i].rotateZ
+                // )
+                if(Math.abs(this.gpuparticle[i].position.x)<=10)
+                {
+                    this.speed = 0.01;
+
+                }
+
+                if(Math.abs(this.gpuparticle[i].position.x)<=10)
+                {
+                    for(var i = 0; i < this.gpuparticle.length; i++)
+                    {
+                        this.gpuparticle[i].startUpdate = true;
+                    }
+                }
+
+                // this.gpuparticle[i].rotation.x += this.animateSetting[i].rotateX*this.speed;
+                // this.gpuparticle[i].rotation.y += this.animateSetting[i].rotateY*this.speed;
+                // this.gpuparticle[i].rotation.z += this.animateSetting[i].rotateZ*this.speed;
+
+            }
+
+        }
+
+
+
+        for(var i = 0; i < this.gpuparticle.length; i++)
+        {
+            this.gpuparticle[i].update();
+        }
 
 
 

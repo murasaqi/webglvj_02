@@ -67,6 +67,14 @@ var BoxParticle = (function () {
                 this.clickCounter++;
             }
         }
+        if (event.key == "b") {
+            if (this.clickCounter == 0) {
+                this.isUpdate = true;
+            }
+            if (this.clickCounter < this.gpuparticle.length) {
+                this.clickCounter++;
+            }
+        }
     };
     BoxParticle.prototype.initPos = function (mode) {
         this.clickCounter = 0;
@@ -158,12 +166,6 @@ var BoxParticle = (function () {
         this.UPDATE = false;
     };
     BoxParticle.prototype.click = function () {
-        if (this.clickCounter == 0) {
-            this.isUpdate = true;
-        }
-        if (this.clickCounter < this.gpuparticle.length) {
-            this.clickCounter++;
-        }
     };
     BoxParticle.prototype.easeOutCubic = function (t, b, c, d) {
         if (t >= 1.0) {

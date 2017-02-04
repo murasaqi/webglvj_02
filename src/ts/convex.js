@@ -51,7 +51,8 @@ var Convex = (function () {
         this.scene.add(pointlight);
         this.camera.lookAt(new THREE.Vector3(0, 80, 0));
         this.scene.add(this.camera);
-        this.color = 0xffffff * Math.random();
+        this.color = new THREE.Color();
+        this.color.setRGB(Math.random() * 0.5 + 0.5, 0.5, Math.random() * 0.5 + 0.5);
         this.meshMaterial = new THREE.MeshPhongMaterial({
             color: this.color,
             shading: THREE.FlatShading
@@ -93,6 +94,14 @@ var Convex = (function () {
     };
     Convex.prototype.randomPoint = function () {
         return new THREE.Vector3(THREE.Math.randFloat(-1, 1), THREE.Math.randFloat(-1, 1), THREE.Math.randFloat(-1, 1));
+    };
+    Convex.prototype.keyDown = function (e) {
+        if (e.key == "c") {
+            this.color.setRGB(Math.random() * 0.5 + 0.5, 0.5, Math.random() * 0.5 + 0.5);
+            for (var i = 0; i < this.convexmeshs.length; i++) {
+                this.convexmeshs[i].material.color = this.color;
+            }
+        }
     };
     Convex.prototype.endEnabled = function () {
         this.UPDATE = false;

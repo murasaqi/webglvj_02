@@ -523,13 +523,13 @@ class GPGPUParticle {
             this.boxMaterial.opacity = 1.0;
             this.boxMaterial.color.set(0x000000);
 
-            if(!this.boxRemove)
-            {
-                this.scene.remove(this.boxMesh);
-                this.boxGeomery.dispose();
-                this.boxMaterial.dispose();
-                this.boxRemove = true;
-            }
+                if(!this.boxRemove)
+                {
+                    this.scene.remove(this.boxMesh);
+                    this.boxGeomery.dispose();
+                    this.boxMaterial.dispose();
+                    this.boxRemove = true;
+                }
 
 
         }
@@ -568,7 +568,7 @@ class GPGPUParticleScene {
     private animateSetting:Object[]=[];
     private speed:number = 1.0;
 
-
+    
 
 
     constructor(renderer) {
@@ -603,11 +603,11 @@ class GPGPUParticleScene {
             };
             this.animateSetting.push(setting);
 
-            var position = new THREE.Vector3(vec*(200+Math.random()*100),Math.random()*200-100,Math.random()*200-100);
-            this.startUpdate = false;
-            var color = new THREE.Color(0xffffff);
-            // scene, camera, renderer,width,position,color
-            this.gpuparticle.push( new GPGPUParticle(this.scene,this.camera,this.renderer,100,position,color));
+                    var position = new THREE.Vector3(vec*(200+Math.random()*100),Math.random()*200-100,Math.random()*200-100);
+                    this.startUpdate = false;
+                    var color = new THREE.Color(0xffffff);
+                    // scene, camera, renderer,width,position,color
+                    this.gpuparticle.push( new GPGPUParticle(this.scene,this.camera,this.renderer,100,position,color));
 
 
         }
@@ -624,7 +624,7 @@ class GPGPUParticleScene {
         this.scene.add(dLight);
 
 
-
+        
     }
 
     public keyUp()
@@ -636,7 +636,7 @@ class GPGPUParticleScene {
     {
 
     }
-
+    
 
     public  initOrbitControls()
     {
@@ -656,7 +656,7 @@ class GPGPUParticleScene {
 
 
 
-
+   
     public remove()
     {
 
