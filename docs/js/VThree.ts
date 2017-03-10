@@ -102,6 +102,34 @@ class VThree
             this.NUM = 0;
         }
 
+        if(this.NUM == 1 )
+        {
+            $(".sceneinfo").text("please push [SPACE_KEY]");
+        }
+        if(this.NUM == 2 )
+        {
+            $(".sceneinfo").text("please push [SPACE_KEY]");
+        }
+        if(this.NUM == 3 )
+        {
+            $(".sceneinfo").text("please push [SPACE_KEY]");
+        }
+
+        if(this.NUM == 4 )
+        {
+            $(".sceneinfo").text(" ");
+        }
+
+        if(this.NUM == 5 )
+        {
+            $(".sceneinfo").text(" ");
+        }
+
+        if(this.NUM == 0 )
+        {
+            $(".sceneinfo").text(" ");
+        }
+
     }
 
     public  onClick = () => {
@@ -158,6 +186,12 @@ class VThree
 
         console.log(this.NUM);
         this.scenes[this.NUM].keyDown(e);
+
+
+
+
+
+
 
     }
 

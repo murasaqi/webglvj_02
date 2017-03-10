@@ -24,6 +24,24 @@ var VThree = (function () {
             if (_this.NUM >= _this.scenes.length) {
                 _this.NUM = 0;
             }
+            if (_this.NUM == 1) {
+                $(".sceneinfo").text("please push [SPACE_KEY]");
+            }
+            if (_this.NUM == 2) {
+                $(".sceneinfo").text("please push [SPACE_KEY]");
+            }
+            if (_this.NUM == 3) {
+                $(".sceneinfo").text("please push [SPACE_KEY]");
+            }
+            if (_this.NUM == 4) {
+                $(".sceneinfo").text(" ");
+            }
+            if (_this.NUM == 5) {
+                $(".sceneinfo").text(" ");
+            }
+            if (_this.NUM == 0) {
+                $(".sceneinfo").text(" ");
+            }
         };
         this.onClick = function () {
             _this.scenes[_this.NUM].click();

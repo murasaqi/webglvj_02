@@ -29,7 +29,7 @@ class Clock {
     private nextbgcolor:any;
     private whitebgcolor:any;
     private blackbgcolor:any;
-    private isClick:boolean = false;
+    private isClick:boolean = true;
     private arraynow:any;
     private arraywhite:any;
     private arrayblack:any;

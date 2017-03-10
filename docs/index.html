@@ -397,6 +397,7 @@
 
             <!--vNormal = normal;-->
 
+
 		    <!--vec4 posTemp = texture2D( texturePosition, uv_gpu );-->
             <!--vec3 pos = posTemp.xyz;-->
 		    <!--//vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );-->
@@ -454,8 +455,6 @@
 		<!--}-->
 	<!--</script>-->
 
-
-
 <!--<script id="vertexShader_line" type="x-shader/x-vertex">-->
 		<!--precision highp float;-->
 		<!--uniform float sineTime;-->
@@ -489,7 +488,10 @@
 			<!--gl_FragColor = color;-->
 		<!--}-->
 	<!--</script>-->
-
+<script
+        src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
 <script type="text/javascript" src="js/three.min.js"></script>
 <script type="text/javascript" src="js/ConvexGeometry.js"></script>
 <script type="text/javascript" src="js/simplex-noise.js"></script>
@@ -524,7 +526,6 @@
 <script type="text/javascript" src="js/InstanceBufferParticle.js"></script>
 <script type="text/javascript" src="js/NoiseWaveLogo.js"></script>
 <script type="text/javascript" src="js/instancing_billboards_test.js"></script>
-
 <script type="text/javascript" src="js/convex.js"></script>
 
 <style>
@@ -535,6 +536,7 @@
         margin: 0;
         background-color: #000;
         overflow: hidden;
+        font-family: Helvetica , "游ゴシック" , "Yu Gothic" , sans-serif;
     }
     canvas {
         /*width: 100%;*/
@@ -543,6 +545,25 @@
         top: 0;
         left: 0;
         opacity: 1.0;
+    }
+    .info{
+        position: fixed;
+        z-index: 999;
+        margin-left: 20px;
+        letter-spacing: 4px;
+
+        
+    }
+    .info p, h1
+    {
+        color: #d107b2;
+    }
+    h1
+    {
+        font-size: 25px;
+    }
+    p{
+        font-size: 15px;
     }
 
 </style>
@@ -569,18 +590,10 @@
         let logo = new NoiseWaveLogo(vthree.renderer);
         let convex = new Convex(vthree.renderer);
         let boxparticle = new BoxParticle(vthree02.renderer);
-		var particle = new GPGPUParticleScene(vthree.renderer);
-
-
-
-        //vthree02.addScene(shadowBox);
 
         vthree02.addScene(model);
         vthree02.addScene(logo);
-
         vthree02.addScene(IBP);
-
-
 
         vthree02.addScene(boxparticle);
         vthree.addScene(box);
@@ -589,13 +602,6 @@
         vthree.addScene(clock);
         vthree.addScene(imgParticle);
         vthree.addScene(convex);
-//        vthree.addScene(matrix);
-
-
-        //vthree02.addScene(IBP);
-
-
-
 
         vthree.draw();
         vthree02.draw();
@@ -603,6 +609,10 @@
     },false);
 
 </script>
-
+<div class="info">
+    <h1>WEBGL VJ</h1>
+    <p class="buttoninfo">scene change: ←[LEFT] or [RIGHT]→ key</p>
+    <p class="sceneinfo"></p>
+</div>
 </body>
 </html>

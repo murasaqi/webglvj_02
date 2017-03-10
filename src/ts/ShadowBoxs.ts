@@ -311,8 +311,9 @@ class ShadowBoxs{
     {
 
         // console.log(keycode);
-        if(keycode.key == "s")
+        if(keycode.key == " ")
         {
+
             console.log("stop");
             this.isSlowDown = true;
         }

@@ -273,7 +273,7 @@ class GPGPUParticle_frame {
     private boxMesh:THREE.Mesh;
     private color:THREE.Color;
     private boxRemove:boolean;
-    private PARTICLE_NUM:number = 500;
+    private PARTICLE_NUM:number = 300;
     private group:THREE.Group;
     public rotation:any;
 
@@ -481,7 +481,8 @@ class GPGPUParticle_frame {
 
     public getCameraConstant(camera) {
         // カメラ情報を計算。
-        return window.innerHeight / ( Math.tan( THREE.Math.DEG2RAD * 0.7 * camera.fov*0.6 ) / camera.zoom );
+        return window.innerHeight / ( Math.tan( THREE.Math.DEG2RAD * camera.fov ) / camera.zoom );
+
     }
 
     public resize() {

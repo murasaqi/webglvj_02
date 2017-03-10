@@ -220,7 +220,7 @@ var particleShader_frame = {
 };
 var GPGPUParticle_frame = (function () {
     function GPGPUParticle_frame(scene, camera, renderer, width, height, position, color) {
-        this.PARTICLE_NUM = 500;
+        this.PARTICLE_NUM = 300;
         this.time = 0.0;
         this.isSpeedDown = false;
         this.radian = 0.0;
@@ -351,7 +351,7 @@ var GPGPUParticle_frame = (function () {
         }
     };
     GPGPUParticle_frame.prototype.getCameraConstant = function (camera) {
-        return window.innerHeight / (Math.tan(THREE.Math.DEG2RAD * 0.7 * camera.fov * 0.6) / camera.zoom);
+        return window.innerHeight / (Math.tan(THREE.Math.DEG2RAD * camera.fov) / camera.zoom);
     };
     GPGPUParticle_frame.prototype.resize = function () {
         this.particleUniforms.cameraConstant.value = this.getCameraConstant(this.camera);
