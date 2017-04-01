@@ -1096,8 +1096,13 @@ class Frame {
         }
 
         if(keyCode.code == "KeyD") {
-            // this.isSpeedDown = true;
-            this.nextCameraFov = 40 + Math.random()*80;
+            // this.isSpeedDown = true;KeyD
+            let pre = this.nextCameraFov;
+            while (Math.abs(pre-this.nextCameraFov) <40)
+            {
+
+                this.nextCameraFov = 40 + Math.random() * 80;
+            }
             console.log(this.nextCameraFov);
         }
 

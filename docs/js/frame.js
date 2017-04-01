@@ -703,7 +703,10 @@ var Frame = (function () {
             this.isSpeedDown = true;
         }
         if (keyCode.code == "KeyD") {
-            this.nextCameraFov = 40 + Math.random() * 80;
+            var pre = this.nextCameraFov;
+            while (Math.abs(pre - this.nextCameraFov) < 40) {
+                this.nextCameraFov = 40 + Math.random() * 80;
+            }
             console.log(this.nextCameraFov);
         }
         if (keyCode.code == "Space") {
