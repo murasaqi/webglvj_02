@@ -427,6 +427,7 @@ var Frame = (function () {
         this.isUpdate = false;
         this.time = 0.0;
         this.time = 0.0;
+        this.nextCameraFov = 100;
         this.frame_boxs = [];
         this.speed = 0.0;
         this.scene02Update = false;
@@ -477,7 +478,7 @@ var Frame = (function () {
                 now: 5.0,
                 slow: 0.01
             };
-        this.camera = new THREE.PerspectiveCamera(110, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 10000);
         this.camera.position.z = 300;
         var textureLoader = new THREE.TextureLoader();
         var image = textureLoader.load("textures/frame.jpg");
@@ -571,6 +572,8 @@ var Frame = (function () {
         this.time = 0.0;
     };
     Frame.prototype.update = function () {
+        this.camera.fov += (this.nextCameraFov - this.camera.fov) * 0.05;
+        this.camera.updateProjectionMatrix();
         this.renderer.setClearColor(0xffffff, 1.0);
         if (this.scene01Update) {
             if (this.isSpeedDown) {
@@ -578,8 +581,8 @@ var Frame = (function () {
                 this.time += 0.001;
             }
             else {
-                this.speed += (0.045 - this.speed) * 0.1;
-                this.time += 0.02;
+                this.speed += (0.005 - this.speed) * 0.1;
+                this.time += 0.1;
             }
             this.scene01Speed.now += (this.scene01Speed.slow - this.scene01Speed.now) * 0.1;
             for (var i = 0; i < this.boxs.length; i++) {
@@ -607,7 +610,7 @@ var Frame = (function () {
                 else {
                     var next = this.rotattion.next[i];
                     var now = this.rotattion.now[i];
-                    var speed = 0.25;
+                    var speed = 0.05;
                     now.x += (next.x - now.x) * speed;
                     now.y += (next.y - now.y) * speed;
                     now.z += (next.z - now.z) * speed;
@@ -698,6 +701,10 @@ var Frame = (function () {
         }
         if (keyCode.code == "KeyS") {
             this.isSpeedDown = true;
+        }
+        if (keyCode.code == "KeyD") {
+            this.nextCameraFov = 40 + Math.random() * 80;
+            console.log(this.nextCameraFov);
         }
         if (keyCode.code == "Space") {
             if (this.clickCount == 0) {

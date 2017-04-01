@@ -615,7 +615,7 @@ class GPGPUParticle_frame {
 class Frame {
 
     public scene: THREE.Scene;
-    public camera: THREE.Camera;
+    public camera: THREE.PerspectiveCamera;
 
     public UPDATE:boolean = true;
     public END:boolean = false;
@@ -629,6 +629,8 @@ class Frame {
     private time:number = 0.0;
     private time:number = 0.0;
     private scene01FramePositions:Object;
+    private nextCameraFov:number = 100;
+    // private
     // private scene01FramePositions_next:any[] = [];
     private rotattion:Object;
     private radian:Object;
@@ -717,7 +719,7 @@ class Frame {
 
 
         // カメラを作成
-        this.camera = new THREE.PerspectiveCamera( 110, window.innerWidth/window.innerHeight, 0.1, 10000 );
+        this.camera = new THREE.PerspectiveCamera( 100, window.innerWidth/window.innerHeight, 0.1, 10000 );
         this.camera.position.z = 300;
 
         var textureLoader = new THREE.TextureLoader();
@@ -884,6 +886,9 @@ class Frame {
     }
     public update() {
 
+        this.camera.fov += (this.nextCameraFov - this.camera.fov) * 0.05;
+        this.camera.updateProjectionMatrix();// = true;
+
         this.renderer.setClearColor ( 0xffffff, 1.0 );
 
 
@@ -895,9 +900,9 @@ class Frame {
 
 
             } else {
-                this.speed += (0.045 - this.speed) * 0.1;
+                this.speed += (0.005 - this.speed) * 0.1;
                 //this.time += 0.04;
-                this.time += 0.02;
+                this.time += 0.1;
                 // this.tween
             }
 
@@ -938,7 +943,7 @@ class Frame {
 
                     var next = this.rotattion.next[i];
                     var now = this.rotattion.now[i];
-                    var speed = 0.25;
+                    var speed = 0.05;
                     // console.log(now);
                     now.x += (next.x - now.x) * speed;
                     now.y += (next.y - now.y) * speed;
@@ -1050,6 +1055,9 @@ class Frame {
 
         }
 
+
+        // this.camera.upda
+
     }
 
     public keyUp()
@@ -1085,6 +1093,12 @@ class Frame {
 
         if(keyCode.code == "KeyS") {
             this.isSpeedDown = true;
+        }
+
+        if(keyCode.code == "KeyD") {
+            // this.isSpeedDown = true;
+            this.nextCameraFov = 40 + Math.random()*80;
+            console.log(this.nextCameraFov);
         }
 
         if(keyCode.code == "Space")
