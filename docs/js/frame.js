@@ -425,12 +425,12 @@ var Frame = (function () {
         this.particles = [];
         this.boxs = [];
         this.isUpdate = false;
-        this.time_scene01 = 0.0;
-        this.time_scene02 = 0.0;
+        this.time = 0.0;
+        this.time = 0.0;
         this.frame_boxs = [];
         this.speed = 0.0;
-        this.scene01Update = false;
         this.scene02Update = false;
+        this.scene01Update = false;
         this.clickCount = 0;
         this.isSpeedDown = false;
         this.renderer = renderer;
@@ -567,22 +567,23 @@ var Frame = (function () {
             this.boxs[i].rotation.set(0, 0, 0);
             this.particles[i].initUpdate();
         }
-        this.time_scene02 = 0.0;
-        this.time_scene01 = 0.0;
+        this.time = 0.0;
+        this.time = 0.0;
     };
     Frame.prototype.update = function () {
         this.renderer.setClearColor(0xffffff, 1.0);
-        if (this.scene02Update) {
-            this.time_scene01 += 0.02;
-            if (Math.sin(this.time_scene01) < 0.0) {
+        if (this.scene01Update) {
+            if (this.isSpeedDown) {
                 this.speed += (0.001 - this.speed) * 0.1;
+                this.time += 0.001;
             }
             else {
                 this.speed += (0.045 - this.speed) * 0.1;
+                this.time += 0.02;
             }
             this.scene01Speed.now += (this.scene01Speed.slow - this.scene01Speed.now) * 0.1;
             for (var i = 0; i < this.boxs.length; i++) {
-                if (Math.sin(this.time_scene01) < 0.0) {
+                if (this.isSpeedDown) {
                     this.particles[i].enableSpeedDown();
                 }
                 else {
@@ -621,33 +622,31 @@ var Frame = (function () {
                     this.particles[i].position.add(this.scene01FrameVector[i]);
                     this.particles[i].enableUpdate();
                     this.particles[i].update();
-                    this.camera.position.x = 500 * Math.cos(this.time_scene01 * 0.1 + Math.PI / 2);
-                    this.camera.position.y = 200 * Math.sin(this.time_scene01 * 0.1);
-                    var z = 700 * Math.sin(this.time_scene01 * 0.1 + Math.PI / 2);
+                    this.camera.position.x = 500 * Math.cos(this.time * 0.1 + Math.PI / 2);
+                    this.camera.position.y = 200 * Math.sin(this.time * 0.1);
+                    var z = 700 * Math.sin(this.time * 0.1 + Math.PI / 2);
                     this.camera.position.z += (z - this.camera.position.z) * 0.01;
                     this.camera.position.add(this.scene01CameraRotation.multiplyScalar(this.scene01Speed.now * 0.4));
                     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
                 }
             }
             if (this.scene01Speed.now < 0.015) {
-                this.time_scene01 += 0.001;
+                this.time += 0.001;
                 this.camera.position.add(this.scene01CameraRotation.multiplyScalar(this.scene01Speed.now));
             }
         }
-        if (this.scene01Update) {
-            this.time_scene02 += 0.01;
-            if (Math.sin(this.time_scene02) < 0.0) {
+        if (this.scene02Update) {
+            if (this.isSpeedDown) {
                 this.speed += (0.001 - this.speed) * 0.1;
-                console.log("0");
             }
             else {
-                this.speed += (0.015 - this.speed) * 0.1;
-                console.log("1");
+                this.speed += (0.02 - this.speed) * 0.1;
             }
-            this.radian.value += this.speed;
+            console.log(this.speed);
+            this.time += this.speed;
             for (var i = 0; i < this.particles.length; i++) {
                 this.particles[i].update();
-                if (Math.sin(this.time_scene02) < 0.0) {
+                if (this.isSpeedDown) {
                     this.particles[i].enableSpeedDown();
                 }
                 else {
@@ -663,13 +662,12 @@ var Frame = (function () {
                         this.boxs[i].position.y = this.particles[i].position.y;
                     }
                     this.scene01FramePositions.now[i].set(this.boxs[i].position.x, this.boxs[i].position.y, this.boxs[i].position.z);
-                    this.time_scene01 = this.time_scene02;
                 }
-                var x = 300 * Math.cos(this.radian.value + Math.PI / 2);
-                var z = 300 * Math.sin(this.radian.value + Math.PI / 2);
-                this.camera.position.set(x, 0, z);
-                this.camera.lookAt(new THREE.Vector3(0, 0, 0));
             }
+            var x = 300 * Math.cos(this.time + Math.PI / 2);
+            var z = 300 * Math.sin(this.time + Math.PI / 2);
+            this.camera.position.set(x, 0, z);
+            this.camera.lookAt(new THREE.Vector3(0, 0, 0));
             if (this.UPDATE == false) {
                 this.remove();
                 if (this.scene.children.length == 0) {
@@ -679,6 +677,7 @@ var Frame = (function () {
         }
     };
     Frame.prototype.keyUp = function () {
+        this.isSpeedDown = false;
     };
     Frame.prototype.click = function () {
     };
@@ -690,29 +689,32 @@ var Frame = (function () {
         console.log(keyCode);
         switch (keyCode) {
             case 190:
-                this.scene01Update = false;
-                this.scene02Update = true;
+                this.scene02Update = false;
+                this.scene01Update = true;
                 break;
             case 82:
                 this.isSpeedDown = true;
                 break;
         }
+        if (keyCode.code == "KeyS") {
+            this.isSpeedDown = true;
+        }
         if (keyCode.code == "Space") {
-            if (this.clickCount == 1) {
-                this.scene01Update = false;
-                this.scene02Update = true;
-            }
             if (this.clickCount == 0) {
-                this.scene01Update = true;
-                this.scene02Update = false;
+                this.scene02Update = true;
+                this.scene01Update = false;
                 for (var i = 0; i < this.particles.length; i++) {
                     this.particles[i].enableUpdate();
                 }
             }
+            if (this.clickCount == 1) {
+                this.scene02Update = false;
+                this.scene01Update = true;
+            }
             if (this.clickCount >= 2) {
                 this.initPosition();
-                this.scene01Update = true;
-                this.scene02Update = false;
+                this.scene02Update = true;
+                this.scene01Update = false;
                 for (var i = 0; i < this.particles.length; i++) {
                     this.particles[i].initUpdate();
                 }
