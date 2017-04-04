@@ -137,10 +137,12 @@ class VThree
         {
             $(".sceneinfo").html(
                 "change noise value [R]<br>"
+                +"change texture [T]<br>"
                 +"speed Up or Down [A]<br>"
                 +"change vector [V]<br>"
                 +"change FOV [D]<br>"
                 +"rotate img [C]<br>"
+
             );
         }
         if(this.NUM == 0 )

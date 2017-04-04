@@ -45,6 +45,7 @@ var VThree = (function () {
             }
             if (_this.NUM == 6) {
                 $(".sceneinfo").html("change noise value [R]<br>"
+                    + "change texture [T]<br>"
                     + "speed Up or Down [A]<br>"
                     + "change vector [V]<br>"
                     + "change FOV [D]<br>"
