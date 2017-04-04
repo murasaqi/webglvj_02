@@ -188,9 +188,9 @@ class FloatingBox {
 
 
 
-        this.normalMap = textureLoader.load( "texture/tilenormalmap.png" );
-        this.map = textureLoader.load( "texture/tilemap.png" );
-        this.displacementMap = textureLoader.load( "texture/tilehightmap.jpg" );
+        this.normalMap = textureLoader.load( "texture/comp/tilenormalmap.png" );
+        this.map = textureLoader.load( "texture/comp/tilemap.png" );
+        this.displacementMap = textureLoader.load( "texture/comp/tilehightmap.jpg" );
 
 
         var planeGeo = new THREE.PlaneGeometry(6000,6000,10,10);

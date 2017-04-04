@@ -1,4 +1,3 @@
-var Uint16Attribute = THREE.Uint16Attribute;
 var WierBox = (function () {
     function WierBox(scene, width, depth, height, position, color, isCreateFace) {
         this.width = 100;
