@@ -116,7 +116,7 @@ var NoiseWaveLogo = (function () {
         if (e.key == "v") {
             this.velocity *= -1;
         }
-        if (e.key == 'f') {
+        if (e.key == 'd') {
             var pre = this.camera.fov;
             while (Math.abs(pre - this.cameraFov) < 60) {
                 this.cameraFov = 75 + Math.random() * 150 - 75;

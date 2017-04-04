@@ -199,7 +199,7 @@ class NoiseWaveLogo {
                 this.velocity *= -1;
         }
 
-        if(e.key == 'f')
+        if(e.key == 'd')
         {
             let pre = this.camera.fov;
             while (Math.abs(pre- this.cameraFov) < 60)

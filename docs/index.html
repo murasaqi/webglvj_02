@@ -373,121 +373,6 @@
 
 
 
-// ********************** instance billboard ********************** //
-<!--<script id="vshader_billboard" type="x-shader/x-vertex">-->
-		<!--precision highp float;-->
-		<!--uniform mat4 modelViewMatrix;-->
-		<!--uniform mat4 projectionMatrix;-->
-		<!--uniform mat4 viewMatrix;-->
-		<!--uniform float time;-->
-		<!--attribute vec3 position;-->
-		<!--attribute vec3 normal;-->
-		<!--attribute vec3 cameraPosition;-->
-
-		<!--uniform sampler2D texturePosition;-->
-		<!--attribute vec2 uv;-->
-		<!--attribute vec2 uv_gpu;-->
-		<!--attribute vec3 translate;-->
-
-		<!--varying vec2 vUv;-->
-		<!--varying float vScale;-->
-		<!--varying vec3 vNormal;-->
-		<!--uniform mat4 invMatrix;-->
-		<!--void main() {-->
-
-            <!--vNormal = normal;-->
-
-
-		    <!--vec4 posTemp = texture2D( texturePosition, uv_gpu );-->
-            <!--vec3 pos = posTemp.xyz;-->
-		    <!--//vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );-->
-			<!--vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );-->
-			<!--vec3 trTime = vec3(pos.x + time,pos.y + time,pos.z + time);-->
-			<!--float scale =  (sin( trTime.x * 2.1 ) + sin( trTime.y * 3.2 ) + sin( trTime.z * 4.3 ))/10.0;-->
-			<!--vScale = scale;-->
-			<!--scale = scale * 10.0 + 10.0;-->
-			<!--//scale = 10.0;-->
-
-			<!--//scale = clamp(distance(pos,vec3(0.0,0.0,0.0)), 1.0,0.0 )*30.0;-->
-			<!--scale = sin(time)*10.0;-->
-			<!--mvPosition.xyz += position * scale;-->
-			<!--vUv = uv;-->
-			<!--gl_Position = projectionMatrix * mvPosition;-->
-
-
-		<!--}-->
-	<!--</script>-->
-<!--<script id="fshader_billboard" type="x-shader/x-fragment">-->
-		<!--precision highp float;-->
-		<!--uniform sampler2D map;-->
-		<!--varying vec2 vUv;-->
-		<!--varying float vScale;-->
-		<!--varying vec3 vNormal;-->
-		<!--uniform float time;-->
-		<!--uniform mat4 viewMatrix;-->
-		<!--// HSL to RGB Convertion helpers-->
-		<!--vec3 HUEtoRGB(float H){-->
-			<!--H = mod(H,1.0);-->
-			<!--float R = abs(H * 6.0 - 3.0) - 1.0;-->
-			<!--float G = 2.0 - abs(H * 6.0 - 2.0);-->
-			<!--float B = 2.0 - abs(H * 6.0 - 4.0);-->
-			<!--return clamp(vec3(R,G,B),0.0,1.0);-->
-		<!--}-->
-		<!--vec3 HSLtoRGB(vec3 HSL){-->
-			<!--vec3 RGB = HUEtoRGB(HSL.x);-->
-			<!--float C = (1.0 - abs(2.0 * HSL.z - 1.0)) * HSL.y;-->
-			<!--return (RGB - 0.5) * C + HSL.z;-->
-		<!--}-->
-		<!--void main() {-->
-			<!--vec4 diffuseColor = texture2D( map, vUv );-->
-
-			<!--vec3 lightDirection = vec3(0.0,30.0,30.0);-->
-            <!--vec3  invLight = normalize(viewMatrix * vec4(lightDirection, 0.0)).xyz;-->
-            <!--float diffuse  = clamp(dot(vNormal, invLight), 0.0, 1.0);-->
-            <!--vec4 ambientColor = vec4(0.1, 0.1, 0.1, 1.0);-->
-            <!--vec4 destColor = vec4(0.8,0.6,0.9,1.0) * vec4(vec3(diffuse), 1.0) + ambientColor;-->
-
-
-			<!--//gl_FragColor = vec4( 0.9,0.5,0.9,1.0 );-->
-			<!--gl_FragColor = destColor;-->
-            <!--//gl_FragColor = vec4( diffuseColor.xyz * HSLtoRGB(vec3(0.8, 0.4, 0.9)), diffuseColor.w );-->
-			<!--//if ( diffuseColor.w < 0.5 ) discard;-->
-		<!--}-->
-	<!--</script>-->
-
-<!--<script id="vertexShader_line" type="x-shader/x-vertex">-->
-		<!--precision highp float;-->
-		<!--uniform float sineTime;-->
-		<!--uniform mat4 modelViewMatrix;-->
-		<!--uniform mat4 projectionMatrix;-->
-		<!--attribute vec3 position;-->
-		<!--attribute vec3 offset;-->
-		<!--attribute vec4 color;-->
-		<!--attribute vec4 orientationStart;-->
-		<!--attribute vec4 orientationEnd;-->
-		<!--varying vec3 vPosition;-->
-		<!--varying vec4 vColor;-->
-		<!--void main(){-->
-			<!--vPosition = offset * max(abs(sineTime * 2.0 + 1.0), 0.5) + position;-->
-			<!--vec4 orientation = normalize(mix(orientationStart, orientationEnd, sineTime));-->
-			<!--vec3 vcV = cross(orientation.xyz, vPosition);-->
-			<!--vPosition = vcV * (2.0 * orientation.w) + (cross(orientation.xyz, vcV) * 2.0 + vPosition);-->
-			<!--vColor = color;-->
-			<!--gl_Position = projectionMatrix * modelViewMatrix * vec4( vPosition, 1.0 );-->
-		<!--}-->
-	<!--</script>-->
-
-<!--<script id="fragmentShader_line" type="x-shader/x-fragment">-->
-		<!--precision highp float;-->
-		<!--uniform float time;-->
-		<!--varying vec3 vPosition;-->
-		<!--varying vec4 vColor;-->
-		<!--void main() {-->
-			<!--vec4 color = vec4( vColor );-->
-			<!--color.r += sin( vPosition.x * 10.0 + time ) * 0.5;-->
-			<!--gl_FragColor = color;-->
-		<!--}-->
-	<!--</script>-->
 <script
         src="https://code.jquery.com/jquery-3.1.1.min.js"
         integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -553,7 +438,7 @@
         letter-spacing: 4px;
         /*display: none;*/
 
-        
+
     }
     .info p, h1
     {
@@ -578,6 +463,34 @@
     /*{*/
         /*display: none;*/
     /*}*/
+    .sns{
+        bottom: 10px;
+        right: 10px;
+        width: 110px;
+        position: fixed;
+        z-index: 9999;
+        padding: 0;
+    }
+    li{
+        box-sizing: border-box;
+        list-style: none;
+        display: inline-block;
+        width:40px;
+        /*margin:10px;*/
+        color: #d107b2;
+        padding:0;
+    }
+    li:first-child
+    {
+        margin-right:10px;
+    }
+    /***/
+    /*{*/
+        /*fill: #white;*/
+    /*}*/
+    a {
+        display: block;
+    }
 
 </style>
 <script>
@@ -623,6 +536,18 @@
     },false);
 
 </script>
+    <ul class="sns">
+        <li>
+            <a target="_blank" href="https://www.facebook.com/murasaki.uma">
+                <img class="svg" src="svg/facebook.svg">
+            </a>
+        </li>
+        <li>
+            <a target="_blank" href="https://twitter.com/murasaki_0606">
+                <img class="svg" src="svg/twitter.svg">
+            </a>
+        </li>
+    </ul>
 <div class="info">
     <h1>WEBGL VJ</h1>
     <p class="buttoninfo">scene change: ←[LEFT] or [RIGHT]→ key</p>
