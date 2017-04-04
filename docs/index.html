@@ -551,13 +551,16 @@
         z-index: 999;
         margin-left: 20px;
         letter-spacing: 4px;
-        display: none;
+        /*display: none;*/
 
         
     }
     .info p, h1
     {
         color: #d107b2;
+        margin: 0;
+        line-height: 2em;
+
     }
     h1
     {
@@ -581,40 +584,41 @@
 
     window.addEventListener("load",function () {
         var vthree = new VThree(1.0,false);
-        var vthree02 = new VThree(0.0,true);
+//        var vthree02 = new VThree(0.0,true);
 
-        vthree02.key_sceneNext = ".";
-        vthree02.key_scenePrev = ",";
+//        vthree02.key_sceneNext = ".";
+//        vthree02.key_scenePrev = ",";
 
 //        var vthree03 = new VThree(0.0,true);
-        vthree02.transparent = true;
+//        vthree02.transparent = true;
 
 
-        let model = new ModelTest(vthree02.renderer);
-        var shadowBox = new ShadowBoxs(vthree02.renderer);
+//        let model = new ModelTest(vthree02.renderer);
+        var shadowBox = new ShadowBoxs(vthree.renderer);
         let imgParticle = new ImgParticle(vthree.renderer);
         let frame = new Frame(vthree.renderer);
         let clock = new Clock(vthree.renderer);
         let box = new FloatingBox(vthree.renderer);
-        let IBP = new InstanceBufferParticle(vthree02.renderer);
+//        let IBP = new InstanceBufferParticle(vthree02.renderer);
         let logo = new NoiseWaveLogo(vthree.renderer);
         let convex = new Convex(vthree.renderer);
-        let boxparticle = new BoxParticle(vthree02.renderer);
+        let boxparticle = new BoxParticle(vthree.renderer);
 
-        vthree02.addScene(model);
-        vthree02.addScene(logo);
-        vthree02.addScene(IBP);
+//        vthree02.addScene(model);
+//        vthree02.addScene(logo);
+//        vthree02.addScene(IBP);
 
-        vthree02.addScene(boxparticle);
+//        vthree02.addScene(boxparticle);
         vthree.addScene(box);
         vthree.addScene(frame);
         vthree.addScene(shadowBox);
         vthree.addScene(clock);
         vthree.addScene(imgParticle);
         vthree.addScene(convex);
+        vthree.addScene(logo);
 
         vthree.draw();
-        vthree02.draw();
+//        vthree02.draw();
 
     },false);
 

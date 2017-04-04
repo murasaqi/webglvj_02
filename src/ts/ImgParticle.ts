@@ -9,7 +9,7 @@ class ImgParticle{
     public camera: THREE.Camera;
     private timer:number = 0;
 
-    private WIDTH:number =350;
+    private WIDTH:number =200;
     private PARTICLES = this.WIDTH * this.WIDTH;
 
     private stats:Object;
@@ -27,6 +27,7 @@ class ImgParticle{
 
     private imgWidth:number = 80;
     private imgHeight:number = 100;
+    private enableControls:boolean = false;
 
 
     private speed:number = 1.0;
@@ -58,7 +59,7 @@ class ImgParticle{
         this.camera.position.z = 100;
 
 
-        // this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+        this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
 
     }
 
@@ -243,10 +244,17 @@ class ImgParticle{
     public keyDown(e:KeyboardEvent)
     {
 
-        if(e.key = "s")
+        if(e.code == "Space")
         {
+            console.log('s');
             this.isSpeedDown = true;
         }
+
+        if(e.key == "c")
+        {
+            this.enableControls = !this.enableControls;
+        }
+
 
     }
 
@@ -259,13 +267,7 @@ class ImgParticle{
     public update() {
 
 
-        if(this.isSpeedDown)
-        {
-            this.speed = 0.5;
-        } else
-        {
-            this.speed = 2.0;
-        }
+
 
         this.gpuCompute.compute();
 
@@ -280,23 +282,37 @@ class ImgParticle{
         this.positionUniforms.time.value += 0.01*this.speed;
 
 
-        let step = 0.01;
-        this.timer += step*this.speed;
-        let rad = 30;
+        if(this.enableControls)
+        {
+            this.controls.enabled = true;
+        } else {
+            this.controls.enabled = false;
+            if(this.isSpeedDown)
+            {
+                this.speed = 0.5;
+            } else
+            {
+                this.speed = 2.0;
+            }
+            let step = 0.01;
+            this.timer += step*this.speed;
+            let rad = 30;
 
-        this.camera.position.x = Math.cos(this.timer) * rad;
-        this.camera.position.z = Math.sin(this.timer) * rad + 30*Math.cos(this.timer*0.5);
+            this.camera.position.x = Math.cos(this.timer) * rad;
+            this.camera.position.z = Math.sin(this.timer) * rad + 30*Math.cos(this.timer*0.5);
 
-        this.camera.position.y = Math.sin(this.timer*0.5) * rad*0.8;
+            this.camera.position.y = Math.sin(this.timer*0.5) * rad*0.8;
 
 
 
-        let lookat = new THREE.Vector3(0,0,0);
+            let lookat = new THREE.Vector3(0,0,0);
 
-        lookat.x = Math.cos(this.timer*0.4)*1;
-        lookat.y = Math.sin(this.timer*0.2)*1;
-        lookat.z = Math.cos(this.timer*0.3)*1;
-        this.camera.lookAt(new THREE.Vector3(0,0,0));
+            lookat.x = Math.cos(this.timer*0.4)*1;
+            lookat.y = Math.sin(this.timer*0.2)*1;
+            lookat.z = Math.cos(this.timer*0.3)*1;
+            this.camera.lookAt(new THREE.Vector3(0,0,0));
+        }
+
 
 
 

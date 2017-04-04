@@ -299,7 +299,7 @@ class Clock {
                 var radius = this.r/2;
                 var theta = Math.PI*2/this.NUM *j;
                 var date = new Date();
-                var _x = radius * Math.sin(theta * (date.getHours()*1.1))*Math.cos(phi);
+                var _x = radius * Math.sin(theta * ((date.getHours()+1)*1.1))*Math.cos(phi);
                 var _y = radius * Math.cos(theta * date.getSeconds() * 0.8);
                 var _z = radius * Math.sin(theta * date.getSeconds()*0.5) * Math.sin(phi);
                 var x = this.particlePositions[ counter * 3     ];

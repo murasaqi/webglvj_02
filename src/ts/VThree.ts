@@ -104,20 +104,28 @@ class VThree
 
         if(this.NUM == 1 )
         {
-            $(".sceneinfo").text("please push [SPACE_KEY]");
+            $(".sceneinfo").html(
+                "change animation [SPACE_KEY]<br>"
+                +"speed down [S]<br>"
+                +"change FOV[D]"
+            );
         }
         if(this.NUM == 2 )
         {
-            $(".sceneinfo").text("please push [SPACE_KEY]");
+            $(".sceneinfo").text("speed down [SPACE_KEY]");
         }
         if(this.NUM == 3 )
         {
-            $(".sceneinfo").text("please push [SPACE_KEY]");
+            $(".sceneinfo").text("change mesh [SPACE_KEY]");
         }
 
         if(this.NUM == 4 )
         {
             $(".sceneinfo").text(" ");
+            $(".sceneinfo").html(
+                "speed down [SPACE_KEY]<br>"
+                +"enable mouse control [C]"
+            );
         }
 
         if(this.NUM == 5 )
@@ -125,9 +133,20 @@ class VThree
             $(".sceneinfo").text(" ");
         }
 
+        if(this.NUM == 6 )
+        {
+            $(".sceneinfo").html(
+                "change noise value [R]<br>"
+                +"speed Up or Down [A]<br>"
+                +"change vector [V]<br>"
+                +"change FOV [D]<br>"
+                +"rotate img [C]<br>"
+            );
+        }
         if(this.NUM == 0 )
         {
             $(".sceneinfo").text(" ");
+
         }
 
     }
