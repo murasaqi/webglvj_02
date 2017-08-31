@@ -34,6 +34,8 @@ class ImgParticle{
 
     private isSpeedDown:boolean = false;
 
+
+
     constructor(renderer:THREE.WebGLRenderer) {
 
         this.renderer = renderer;
@@ -247,7 +249,7 @@ class ImgParticle{
         if(e.code == "Space")
         {
             console.log('s');
-            this.isSpeedDown = true;
+            this.isSpeedDown = !this.isSpeedDown;
         }
 
         if(e.key == "c")
@@ -260,7 +262,7 @@ class ImgParticle{
 
     public keyUp(e:KeyboardEvent)
     {
-        this.isSpeedDown = false;
+        // this.isSpeedDown = false;
     }
 
     // ワンフレームごとの処理

@@ -83,14 +83,14 @@ class ShadowBoxs{
         // spotLight.shadow.mapSize.width = 1024*2;
         // spotLight.shadow.mapSize.height = 1024*2;
         // this.scene.add( spotLight );
-        this.pointLight01 = this.createLight( 0xfaff6b );
+        this.pointLight01 = this.createLight( 0xf6fc4e );
         this.pointLight01.position.set(30,30,0);
         this.scene.add( this.pointLight01 );
         // this.scene.add( pointLight2 );
 
 
 
-        this.pointLight02 = this.createLight( 0x6bf0ff );
+        this.pointLight02 = this.createLight( 0x96f4ff );
         this.pointLight02.position.set(-30,30,0);
         this.scene.add( this.pointLight02 );
         // let pointLight2 = this.createLight( 0xff0000 );
@@ -129,9 +129,9 @@ class ShadowBoxs{
         this.planeGeo = new THREE.PlaneGeometry(1000,1000,2,2);
         var material = new THREE.MeshPhongMaterial( {
             color: 0xffffff,
-            // shininess: 10,
-            // specular: 0xd8d4e1,
-            // shading: THREE.SmoothShading
+            shininess: 10,
+            specular: 0xd8d4e1,
+            shading: THREE.SmoothShading
         } );
         var receiveshadowmesh = new THREE.Mesh( this.planeGeo, material );
         receiveshadowmesh.rotateX(-Math.PI/2);
@@ -151,12 +151,11 @@ class ShadowBoxs{
         let planematerial = new THREE.MeshLambertMaterial({
             color:0x9400ff,
             shininess: 10,
-            specular: 0x9400ff,
+            specular: 0x00aeff,
             side:THREE.DoubleSide,
             // shading:THREE.FlatShading,
 
         });
-
 
 
         let planemesh = new THREE.Mesh(this.planeGeo,planematerial);
@@ -315,7 +314,7 @@ class ShadowBoxs{
         {
 
             console.log("stop");
-            this.isSlowDown = true;
+            this.isSlowDown = !this.isSlowDown;
         }
 
     }
@@ -323,7 +322,7 @@ class ShadowBoxs{
     public keyUp(e:KeyboardEvent)
     {
 
-        this.isSlowDown = false;
+        // this.isSlowDown = false;
     }
 
     // ワンフレームごとの処理

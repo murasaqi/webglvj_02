@@ -34,10 +34,10 @@ var ShadowBoxs = (function () {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
         this.camera.position.z = 10;
         this.camera.position.y = 10;
-        this.pointLight01 = this.createLight(0xfaff6b);
+        this.pointLight01 = this.createLight(0xf6fc4e);
         this.pointLight01.position.set(30, 30, 0);
         this.scene.add(this.pointLight01);
-        this.pointLight02 = this.createLight(0x6bf0ff);
+        this.pointLight02 = this.createLight(0x96f4ff);
         this.pointLight02.position.set(-30, 30, 0);
         this.scene.add(this.pointLight02);
         var dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -47,7 +47,10 @@ var ShadowBoxs = (function () {
         this.scene.add(ambLight);
         this.planeGeo = new THREE.PlaneGeometry(1000, 1000, 2, 2);
         var material = new THREE.MeshPhongMaterial({
-            color: 0xffffff
+            color: 0xffffff,
+            shininess: 10,
+            specular: 0xd8d4e1,
+            shading: THREE.SmoothShading
         });
         var receiveshadowmesh = new THREE.Mesh(this.planeGeo, material);
         receiveshadowmesh.rotateX(-Math.PI / 2);
@@ -58,7 +61,7 @@ var ShadowBoxs = (function () {
         var planematerial = new THREE.MeshLambertMaterial({
             color: 0x9400ff,
             shininess: 10,
-            specular: 0x9400ff,
+            specular: 0x00aeff,
             side: THREE.DoubleSide
         });
         var planemesh = new THREE.Mesh(this.planeGeo, planematerial);
@@ -157,11 +160,10 @@ var ShadowBoxs = (function () {
     ShadowBoxs.prototype.keyDown = function (keycode) {
         if (keycode.key == " ") {
             console.log("stop");
-            this.isSlowDown = true;
+            this.isSlowDown = !this.isSlowDown;
         }
     };
     ShadowBoxs.prototype.keyUp = function (e) {
-        this.isSlowDown = false;
     };
     ShadowBoxs.prototype.update = function () {
         this.renderer.setClearColor(0x9400ff);

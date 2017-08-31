@@ -121,14 +121,13 @@ var ImgParticle = (function () {
     ImgParticle.prototype.keyDown = function (e) {
         if (e.code == "Space") {
             console.log('s');
-            this.isSpeedDown = true;
+            this.isSpeedDown = !this.isSpeedDown;
         }
         if (e.key == "c") {
             this.enableControls = !this.enableControls;
         }
     };
     ImgParticle.prototype.keyUp = function (e) {
-        this.isSpeedDown = false;
     };
     ImgParticle.prototype.update = function () {
         this.gpuCompute.compute();
