@@ -164,6 +164,15 @@ class VThree
 
     public onKeyDown = (e:KeyboardEvent) => {
 
+
+        if(isFinite(Number(e.key)) && e.key != " ")
+        {
+            console.log("number: " + e.key);
+            // console.log("number: " + Number);
+            this.NUM = Number(e.key);
+            this.checkNum();
+        }
+
         console.log(e);
         // console.log(this.NUM);
         if(e.key == this.key_sceneNext)
@@ -205,8 +214,13 @@ class VThree
             this.updateCanvasAlpha();
         }
 
+
         console.log(this.NUM);
+
         this.scenes[this.NUM].keyDown(e);
+
+
+
 
 
 

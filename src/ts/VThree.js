@@ -62,6 +62,11 @@ var VThree = (function () {
             _this.scenes[_this.NUM].keyUp(e);
         };
         this.onKeyDown = function (e) {
+            if (isFinite(Number(e.key)) && e.key != " ") {
+                console.log("number: " + e.key);
+                _this.NUM = Number(e.key);
+                _this.checkNum();
+            }
             console.log(e);
             if (e.key == _this.key_sceneNext) {
                 _this.NUM++;
