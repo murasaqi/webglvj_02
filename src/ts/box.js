@@ -69,7 +69,7 @@ var FloatingBox = (function () {
         this.cube = new THREE.Mesh(this.geometry, cubeMaterial);
         this.scene.add(this.cube);
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.Fog(0x000000, -500, 3000);
+        this.scene.fog = new THREE.Fog(0x000000, -500, 2500);
         var ambient = new THREE.AmbientLight(0xffffff, 0.8);
         this.scene.add(ambient);
         var light = new THREE.SpotLight(0xffffff);
@@ -216,7 +216,7 @@ var FloatingBox = (function () {
             }
         }
         var date = new Date();
-        if (this.cameraNextPos.distanceTo(this.camera.position) < 2) {
+        if (this.cameraNextPos.distanceTo(this.camera.position) < 0.01) {
             var dist = 800;
             this.cameraNextPos = new THREE.Vector3(Math.random() * dist - dist / 2, Math.random() * dist - dist / 2, Math.random() * 2000 - 1000);
             this.cameraNextLookAt = new THREE.Vector3(Math.random() * 40 - 20, Math.random() * 40 - 20, Math.random() * 40 - 40);
@@ -244,7 +244,7 @@ var FloatingBox = (function () {
                 this.objects[i].position.set(newpos.x, newpos.y, newpos.z);
             }
         }
-        var speed = 0.02;
+        var speed = 0.008;
         this.camera.position.x += (this.cameraNextPos.x - this.camera.position.x) * speed;
         this.camera.position.y += (this.cameraNextPos.y - this.camera.position.y) * speed;
         this.camera.position.z += (this.cameraNextPos.z - this.camera.position.z) * speed;

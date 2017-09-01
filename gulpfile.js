@@ -25,7 +25,7 @@ gulp.task('browser-sync', function() {
 
 gulp.task('watch',['browser-sync'],function() {
     gulp.watch('src/**/*.pug',['pug']);
-    gulp.watch('src/**/*.js',['js']);
+    gulp.watch('src/**/*.ts',['js']);
     gulp.watch('src/**/*.styl',['stylus']);
 
 
