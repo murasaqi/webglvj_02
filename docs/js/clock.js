@@ -8,7 +8,8 @@ var Clock = (function () {
         this.textAlpha = 1.0;
         this.timer = 0.0;
         this.bgColor = { r: 0, g: 0, b: 0 };
-        this.bgColorNext = { r: 0, g: 0, b: 0 };
+        this.bgColorNext = { r: 1, g: 1, b: 1 };
+        this.isFirstUpdate = false;
         this.renderer = renderer;
         this.createScene();
     }
@@ -234,7 +235,10 @@ var Clock = (function () {
         var date = new Date();
         if (this.preSec != date.getSeconds()) {
             if (date.getSeconds() % 4 == 0) {
-                this.isCick = true;
+                if (!this.isFirstUpdate) {
+                    this.isCick = true;
+                    this.isFirstUpdate = true;
+                }
             }
         }
         if (this.isCick) {

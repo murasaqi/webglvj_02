@@ -223,6 +223,7 @@ var GPGPUParticle_frame = (function () {
         this.PARTICLE_NUM = 250;
         this.time = 0.0;
         this.isSpeedDown = false;
+        this.isFirstUpdate = false;
         this.radian = 0.0;
         this.WIDTH = width;
         this.HEIGHT = height;
@@ -434,6 +435,7 @@ var Frame = (function () {
         this.scene01Update = false;
         this.clickCount = 0;
         this.isSpeedDown = false;
+        this.isFirstUpdate = false;
         this.renderer = renderer;
         this.createScene();
     }
@@ -572,6 +574,10 @@ var Frame = (function () {
         this.time = 0.0;
     };
     Frame.prototype.update = function () {
+        if (!this.isFirstUpdate) {
+            this.changeAnimation();
+            this.isFirstUpdate = true;
+        }
         this.camera.fov += (this.nextCameraFov - this.camera.fov) * 0.05;
         this.camera.updateProjectionMatrix();
         this.renderer.setClearColor(0xffffff, 1.0);
@@ -710,29 +716,32 @@ var Frame = (function () {
             console.log(this.nextCameraFov);
         }
         if (keyCode.code == "Space") {
-            if (this.clickCount == 0) {
-                this.scene02Update = true;
-                this.scene01Update = false;
-                for (var i = 0; i < this.particles.length; i++) {
-                    this.particles[i].enableUpdate();
-                }
+            this.changeAnimation();
+        }
+    };
+    Frame.prototype.changeAnimation = function () {
+        if (this.clickCount == 0) {
+            this.scene02Update = true;
+            this.scene01Update = false;
+            for (var i = 0; i < this.particles.length; i++) {
+                this.particles[i].enableUpdate();
             }
-            if (this.clickCount == 1) {
-                this.scene02Update = false;
-                this.scene01Update = true;
+        }
+        if (this.clickCount == 1) {
+            this.scene02Update = false;
+            this.scene01Update = true;
+        }
+        if (this.clickCount >= 2) {
+            this.initPosition();
+            this.scene02Update = true;
+            this.scene01Update = false;
+            for (var i = 0; i < this.particles.length; i++) {
+                this.particles[i].initUpdate();
             }
-            if (this.clickCount >= 2) {
-                this.initPosition();
-                this.scene02Update = true;
-                this.scene01Update = false;
-                for (var i = 0; i < this.particles.length; i++) {
-                    this.particles[i].initUpdate();
-                }
-                this.clickCount = 0;
-            }
-            else {
-                this.clickCount++;
-            }
+            this.clickCount = 0;
+        }
+        else {
+            this.clickCount++;
         }
     };
     Frame.prototype.remove = function () {

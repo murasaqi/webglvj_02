@@ -49,7 +49,8 @@ class Clock {
     private renderer:THREE.WebGLRenderer;
 
     private bgColor:any = {r:0,g:0,b:0};
-    private bgColorNext:any = {r:0,g:0,b:0};
+    private bgColorNext:any = {r:1,g:1,b:1};
+    private isFirstUpdate:boolean = false;
 
     constructor(renderer) {
 
@@ -256,6 +257,10 @@ class Clock {
 
     public update() {
 
+
+
+
+
         this.bgColor.r += (this.bgColorNext.r - this.bgColor.r) * 0.05;
         this.bgColor.g += (this.bgColorNext.g - this.bgColor.g) * 0.05;
         this.bgColor.b += (this.bgColorNext.b - this.bgColor.b) * 0.05;
@@ -382,8 +387,13 @@ class Clock {
             // clock();
             if(date.getSeconds()%4 == 0)
             {
-                this.isCick = true;
+                // this.isCick = true;
                 // randomRingPlay();
+                if(!this.isFirstUpdate)
+                {
+                    this.isCick = true;
+                    this.isFirstUpdate = true;
+                }
             }
         }
         if(this.isCick){

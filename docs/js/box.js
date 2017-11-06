@@ -69,7 +69,7 @@ var FloatingBox = (function () {
         this.cube = new THREE.Mesh(this.geometry, cubeMaterial);
         this.scene.add(this.cube);
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.Fog(0x000000, -500, 3000);
+        this.scene.fog = new THREE.Fog(0x000000, -500, 2500);
         var ambient = new THREE.AmbientLight(0xffffff, 0.8);
         this.scene.add(ambient);
         var light = new THREE.SpotLight(0xffffff);

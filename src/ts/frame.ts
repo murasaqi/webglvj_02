@@ -278,6 +278,7 @@ class GPGPUParticle_frame {
     private time:number = 0.0;
     private isSpeedDown:Boolean = false;
 
+    private isFirstUpdate:boolean = false;
     private HEIGHT:any;
 
 
@@ -643,6 +644,7 @@ class Frame {
     private scene01CameraRotation:any[];
     private clickCount:number = 0;
     private isSpeedDown:Boolean = false;
+    private isFirstUpdate:boolean = false;
 
     constructor(renderer) {
 
@@ -794,6 +796,14 @@ class Frame {
             this.particles[i].setPosition(this.scene01FramePositions.now[i]);
         }
 
+
+
+
+
+
+
+
+
     }
 
     private initPosition()
@@ -886,6 +896,13 @@ class Frame {
     }
     public update() {
 
+
+        if(!this.isFirstUpdate)
+        {
+            this.changeAnimation();
+            // this.ena
+            this.isFirstUpdate = true;
+        }
         this.camera.fov += (this.nextCameraFov - this.camera.fov) * 0.05;
         this.camera.updateProjectionMatrix();// = true;
 
@@ -1109,44 +1126,50 @@ class Frame {
         if(keyCode.code == "Space")
         {
 
-            if(this.clickCount == 0)
-            {
-
-                this.scene02Update = true;
-                this.scene01Update = false;
-                for(var i = 0; i < this.particles.length; i++)
-                {
-                    this.particles[i].enableUpdate();
-                }
-            }
-
-            if(this.clickCount == 1)
-            {
-                this.scene02Update = false;
-                this.scene01Update = true;
-            }
-
-            if(this.clickCount >= 2)
-            {
-                // this.remove();
-                this.initPosition();
-                this.scene02Update = true;
-                this.scene01Update = false;
-                for(var i = 0; i < this.particles.length; i++)
-                {
-                    // this.particles[i].enableUpdate();
-                    this.particles[i].initUpdate();
-                }
-                this.clickCount = 0;
-            } else {
-                this.clickCount++;
-            }
+            this.changeAnimation();
 
         }
 
 
 
     }
+
+    public changeAnimation()
+    {
+        if(this.clickCount == 0)
+        {
+
+            this.scene02Update = true;
+            this.scene01Update = false;
+            for(var i = 0; i < this.particles.length; i++)
+            {
+                this.particles[i].enableUpdate();
+            }
+        }
+
+        if(this.clickCount == 1)
+        {
+            this.scene02Update = false;
+            this.scene01Update = true;
+        }
+
+        if(this.clickCount >= 2)
+        {
+            // this.remove();
+            this.initPosition();
+            this.scene02Update = true;
+            this.scene01Update = false;
+            for(var i = 0; i < this.particles.length; i++)
+            {
+                // this.particles[i].enableUpdate();
+                this.particles[i].initUpdate();
+            }
+            this.clickCount = 0;
+        } else {
+            this.clickCount++;
+        }
+    }
+
 
 
 
