@@ -18,7 +18,7 @@
     "gulp-pug": "^3.1.0",
     "gulp-stylus": "~2.0.2",
     "gulp-watch": "^4.2.4",
-    "jquery": "^2.1.4",
+    "jquery": "^3.0.0",
     "jquery-ui": "^1.10.5",
     "require-dir": "~0.3.0",
     "run-sequence": "^1.2.2",
